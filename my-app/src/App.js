@@ -1,24 +1,27 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import { Button, Typography } from "@mui/material";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/login/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
-  let [isLoggedIn, setIsLoggedIn] = useState(false);
+const ProtectedPage = () => <h1>Dobrodošli u zaštićenu stranicu!</h1>;
 
-  useEffect(() => {
-    
-  },[]);
-
-  return (
-    <>
-      {!isLoggedIn && <div>nije logovan</div>}
-      {isLoggedIn && <div>logovan</div>}
-      
-      {/* <Button variant="contained" onClick={(e) => setNestoDrugo(++nestoDrugo)}>nesto</Button>
-      <Typography>{nestoDrugo}</Typography> */}
-
-    </>
-  );
-}
+const App = () => (
+  <Router>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/protected"
+        element={
+          <ProtectedRoute>
+            <ProtectedPage />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  </Router>
+);
 
 export default App;
