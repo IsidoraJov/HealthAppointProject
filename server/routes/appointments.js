@@ -5,14 +5,27 @@ const connection = require('../db');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   
-    connection.query('SELECT * FROM appointments', (err, results) => {
-        if (err) {
-          res.status(500).send('Greška pri dobijanju podataka.');
-        } else {
-          res.json(results)
-          console.log(results);
-        }
-      });
+    const query = `
+    SELECT appointments.id, appointments.start_time, appointments.end_time, patients.first_name, patients.last_name
+    FROM appointments
+    JOIN patients ON appointments.patient_id = patients.id
+  `; 
+  connection.query(query, (err, results) => {
+    if (err) {
+      res.status(500).send('Greška pri dobijanju podataka.');
+    } else {
+      
+      const formattedResults = results.map((appointment) => ({
+        id: appointment.id,
+        title: `${appointment.first_name} ${appointment.last_name}`,
+        start: appointment.start_time,
+        end: appointment.end_time,  
+      }));
+
+      res.json(formattedResults);  
+      console.log(formattedResults);  
+    }
+  });
 });
 
 router.post("/add", (req, res) => {
@@ -62,6 +75,20 @@ router.post("/add", (req, res) => {
             appointment_id: result.insertId,
         });
     });
+});
+
+router.get('/type', function(req, res, next) {
+
+    connection.query('SELECT * FROM appointments_type', (err, results) => {
+        if (err) {
+          res.status(500).send('Greška pri dobijanju podataka.');
+        } else {
+         
+          res.json(results)
+          
+        }
+      });
+
 });
 
 module.exports = router;

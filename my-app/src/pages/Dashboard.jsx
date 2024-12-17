@@ -1,25 +1,58 @@
-import React from "react";
-import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem , Tab, Tabs} from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid"; // Mesečni prikaz kalendara
+import dayGridPlugin from "@fullcalendar/daygrid"; 
+import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
 import logo from "../assets/images/logoB.png";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 
 const Dashboard = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
-  const handleNavigate = (path) => {
-    console.log(`Navigacija ka: ${path}`);
-    // Ovde dodaj logiku za navigaciju, npr. navigate('/path')
+  const [tabValue, setTabValue] = useState(0); // (0 - mesecni, 1 - dnevni)
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue); 
   };
 
-  const events = [
-    { title: "Pregled kod dr. Jovana", start: new Date(), end: new Date() },
-    { title: "Kontrola - dr. Marija", start: "2024-06-20T10:00:00", end: "2024-06-20T11:00:00" },
-  ];
+  const handleNavigate = (path) => {
+    console.log(`Navigacija ka: ${path}`);
+    //  logiku 
+  }; 
+  const navigate = useNavigate();
+
+
+  const [events, setEvents] = useState([]);
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/appointments");
+      const serverData = response.data;
+
+    
+      const formattedEvents = serverData.map((appointment) => ({
+            id: appointment.id, 
+            title: appointment.title, 
+            start: appointment.start, 
+            end: appointment.end,   
+        }));
+
+        setEvents(formattedEvents); 
+        } catch (error) {
+        console.error("Error fetching appointments:", error);
+        }
+    };
+
+    
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#006A6A" }}>
@@ -48,7 +81,7 @@ const Dashboard = () => {
 
           {/* Meni za profil */}
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem onClick={() => handleNavigate("/profile")}>Profile</MenuItem>
+            <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
             <MenuItem onClick={() => handleNavigate("/login")}>Logout</MenuItem>
           </Menu>
         </Toolbar>
@@ -59,7 +92,7 @@ const Dashboard = () => {
         <Button color="inherit" onClick={() => handleNavigate("/patients")} sx={{ color: "white", marginX: 2 }}>
           Patients
         </Button>
-        <Button color="inherit" onClick={() => handleNavigate("/doctors")} sx={{ color: "white", marginX: 2 }}>
+        <Button color="inherit" onClick={() => navigate("/doctors")} sx={{ color: "white", marginX: 2 }}>
           Doctors
         </Button>
         <Button color="inherit" onClick={() => handleNavigate("/departments")} sx={{ color: "white", marginX: 2 }}>
@@ -69,11 +102,11 @@ const Dashboard = () => {
     
         
       {/* Kalendar */}
-      <Container sx={{ flexGrow: 1, marginY: 4 }}>
+      <Container sx={{ flexGrow: 1, marginY: 2 }}>
         <Grid container justifyContent="center">
-          <Grid item xs={12} md={10}>
-            <Typography variant="h5" gutterBottom align="center" color="white">
-              Zakazani termini
+          <Grid item xs={12} md={12} lg={12}>
+            <Typography variant="h4" gutterBottom align="center" color="white">
+            Scheduled Appointments
             </Typography>
 
             <Box sx={{ marginBottom: 4 }}>
@@ -98,14 +131,43 @@ const Dashboard = () => {
                 </Box>
                 </Box>  
             <Box sx={{ backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
-              <FullCalendar
+             {/* <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 events={events}
                 editable
                 selectable
                 height="80vh"
-              />
+              />*/}
+              <Box sx={{ width: '100%' }}>
+      <Tabs value={tabValue} onChange={handleTabChange} centered>
+        <Tab label="Monthly view" />
+        <Tab label="Daily view" />
+      </Tabs>
+
+      <Box sx={{ padding: '20px' }}>
+       
+        {tabValue === 0 && (
+          <FullCalendar
+                plugins={[dayGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                events={events}
+                editable
+                selectable
+                height="80vh"
+          />
+        )}
+
+        {/* FullCalendar za dnevni prikaz */}
+        {tabValue === 1 && (
+          <FullCalendar
+            plugins={[timeGridPlugin, interactionPlugin]}
+            initialView="timeGridDay" // Dnevni prikaz
+            events={events}
+          />
+        )}
+      </Box>
+    </Box>
             </Box>
           </Grid>
         </Grid>
