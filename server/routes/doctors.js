@@ -10,6 +10,7 @@ router.get('/', function(req, res, next) {
         if (err) {
           res.status(500).send('Greška pri dobijanju podataka.');
         } else {
+         
           res.json(results)
           
         }

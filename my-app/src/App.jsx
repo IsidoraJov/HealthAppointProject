@@ -5,6 +5,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/login/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./pages/Dashboard";
 
 const ProtectedPage = () => <h1>Dobrodošli u zaštićenu stranicu!</h1>;
 
@@ -20,6 +21,7 @@ const App = () => (
           </ProtectedRoute>
         }
       />
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   </Router>
 );

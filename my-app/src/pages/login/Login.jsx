@@ -13,7 +13,7 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    // Ovde dodaj logiku za autentifikaciju
+   
     if (!formData.username || !formData.password) {
       setError("Molimo vas da popunite sva polja.");
       return;

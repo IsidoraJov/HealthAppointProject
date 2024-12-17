@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cors = require("cors");
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -21,8 +23,11 @@ const bcrypt = require("bcrypt"); // Za šifrovanje lozinki
 
 const connection = require('./db'); 
 
+app.use(cors());
 
-
+app.use(cors({
+  origin: 'http://localhost:3000'  // Dozvoljava samo zahteve sa localhost:3000
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
