@@ -54,12 +54,12 @@ HealthAppoint is a comprehensive patient management system designed for healthca
 
 1. **Database Configuration**:
    - Install PostgreSQL and create a database named `healthappoint`.
-   - Update the database connection string in `server/config/db.js`.
+   - Update the database connection string in `server/src/db.js`.
 
 2. **Environment Variables**:
    - Create a `.env` file in the `server` directory with the following variables:
      ```env
-     PORT=5000
+     PORT=8080
      DATABASE_URL=your_database_connection_string
      JWT_SECRET=your_jwt_secret
      EMAIL_SERVICE_API_KEY=your_email_service_key
