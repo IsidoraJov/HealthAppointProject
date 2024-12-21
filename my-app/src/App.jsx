@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import DoctorProfile from "./pages/DoctorProfile"
 import Doctors from "./pages/doctor/index"
+import Patient from "./pages/patients/PatientProfile"
 const ProtectedPage = () => <h1>Dobrodošli u zaštićenu stranicu!</h1>;
 
 const App = () => (
@@ -25,6 +26,7 @@ const App = () => (
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<DoctorProfile />} />
       <Route path="/doctors" element={<Doctors />} />
+      <Route path="/patient-profile" element={<Patient />} />
     </Routes>
   </Router>
 );

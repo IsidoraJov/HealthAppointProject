@@ -33,11 +33,11 @@ const Login = () => {
     <Box
       component="img"
       sx={{
-        height: "100%", // Slika pokriva celu visinu
-        width: "100%",  // Slika pokriva celu širinu
-        objectFit: "cover", // Slika se skalira bez izobličenja
+        height: "100%", 
+        width: "100%",  
+        objectFit: "cover", 
       }}
-      src={logo} // Koristi importovanu sliku
+      src={logo} 
       alt="Opis slike"
     />
   </Grid>

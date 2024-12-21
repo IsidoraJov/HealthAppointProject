@@ -9,6 +9,7 @@ import listPlugin from "@fullcalendar/list";
 import logo from "../assets/images/logoB.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import AddAppointmentForm from "./AddAppointmentForm";
 
 
 const Dashboard = () => {
@@ -17,6 +18,15 @@ const Dashboard = () => {
   const handleMenuClose = () => setAnchorEl(null);
 
   const [tabValue, setTabValue] = useState(0); // (0 - mesecni, 1 - dnevni)
+
+  const [isFormOpen, setIsFormOpen] = React.useState(false);
+
+  console.log("Is form open:", isFormOpen);
+
+  const handleCloseForm = () => {
+    console.log("Closing form...");
+    setIsFormOpen(false); 
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue); 
@@ -110,25 +120,31 @@ const Dashboard = () => {
             </Typography>
 
             <Box sx={{ marginBottom: 4 }}>
-                
-                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, marginBottom: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, marginBottom: 2 }}>
                     <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => console.log("Add Patient")}
-                    sx={{ backgroundColor: "#FF7043" }}
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => console.log("Add Patient")}
+                        sx={{ backgroundColor: "#FF7043" }}
                     >
-                    Add Patient
+                        Add Patient
                     </Button>
+
                     <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => console.log("Add Appointment")}
-                    sx={{ backgroundColor: "#4CAF50" }}
+                        variant="contained"
+                        color="primary"
+                        sx={{ backgroundColor: "#4CAF50" }}
+                        onClick={() => setIsFormOpen(true)}
                     >
-                    Add Appointment
+                        Add Appointment
                     </Button>
-                </Box>
+
+                    {/* Forma za dodavanje termina */}
+                    <AddAppointmentForm
+                        open={isFormOpen}
+                        onClose={handleCloseForm}
+                    />
+                    </Box>
                 </Box>  
             <Box sx={{ backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
              {/* <FullCalendar
@@ -155,6 +171,11 @@ const Dashboard = () => {
                 editable
                 selectable
                 height="80vh"
+                eventClick={(info) => {
+                  const { title, id: appointmentId } = info.event;
+                  const [firstName, lastName] = title.split(" "); 
+                  navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
+                }}
           />
         )}
 
@@ -164,6 +185,11 @@ const Dashboard = () => {
             plugins={[timeGridPlugin, interactionPlugin]}
             initialView="timeGridDay" // Dnevni prikaz
             events={events}
+            eventClick={(info) => {
+              const { title, id: appointmentId } = info.event;
+              const [firstName, lastName] = title.split(" "); 
+              navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
+            }}
           />
         )}
       </Box>

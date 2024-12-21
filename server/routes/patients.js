@@ -15,29 +15,69 @@ router.get('/', function(req, res, next) {
       });
 });
 
-router.get('/:id', (req, res) => {
-    const userId = req.params.id; 
+router.get('/getPatientId', (req, res) => {
+
   
-    const query = 'SELECT * FROM patients WHERE id = ?'; 
-    connection.query(query, [userId], (err, results) => {
-      if (err) {
-        console.error('Greška pri izvršavanju upita:', err);
-        res.status(500).send('Greška na serveru');
-      } else if (results.length === 0) {
-        res.status(404).send('Korisnik nije pronađen');
-      } else {
-        const patient = results[0];
-        const responseText = `
-          
-          First Name: ${patient.first_name}<br>
-          Last Name: ${patient.last_name}<br>
-          JMBG: ${patient.jmbg}
-         
-        `;
-        res.send(responseText); 
-      }
-    });
+  const { firstName, lastName } = req.query;
+
+  // Validacija ulaznih podataka
+  if (!firstName || !lastName) {
+    return res.status(400).json({ error: 'First name and last name are required' });
+  }
+
+  console.log('dolazni parametri za getPatientId', { firstName, lastName });
+
+  // SQL upit za pronalaženje ID-a pacijenta
+  const query = `
+    SELECT id FROM patients 
+    WHERE first_name = ? AND last_name = ?
+    LIMIT 1
+  `;
+
+  connection.query(query, [firstName, lastName], (err, results) => {
+    if (err) {
+      console.error('Database error:', err.message);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const patientId = results[0].id;
+    res.json({ patientId });
   });
+});
+
+router.get('/:id', (req, res) => {
+    const userId = req.params.id;
+
+    const query = 'SELECT * FROM patients WHERE id = ?';
+    connection.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Greška pri izvršavanju upita:', err);
+            return res.status(500).json({ error: 'Greška na serveru' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Pacijent nije pronađen' });
+        }
+
+        const patient = results[0];
+        const response = {
+            firstName: patient.first_name,
+            lastName: patient.last_name,
+            jmbg: patient.jmbg,
+            dateOfBirth: patient.birthday,
+            phone: patient.phone,
+            email: patient.email,
+            address: patient.address,
+            gender: patient.gender,
+            emergencyContact: patient.emergency_contact,
+        };
+        console.log('Odgvogor na metodu /id ', response);
+        res.json(response); // Vraćanje podataka u JSON formatu
+    });
+});
 
   const addNewPatient = (firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res) => {
     const query = `

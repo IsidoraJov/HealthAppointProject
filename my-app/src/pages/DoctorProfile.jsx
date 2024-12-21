@@ -4,7 +4,7 @@ import { Box, Button, Card, CardContent, Typography, TextField } from "@mui/mate
 const DoctorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
 
-  // Dummy podaci za doktora
+
   const [doctorData, setDoctorData] = useState({
     firstName: "John",
     lastName: "Doe",

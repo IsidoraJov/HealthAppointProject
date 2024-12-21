@@ -23,7 +23,7 @@ router.get('/', function(req, res, next) {
       }));
 
       res.json(formattedResults);  
-      console.log(formattedResults);  
+        
     }
   });
 });
