@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {Divider,Grid, AppBar, Toolbar, Typography, Box, Container, Accordion, AccordionSummary, AccordionDetails, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams,useNavigate } from "react-router-dom";
 import axios from "axios";
 import { format } from 'date-fns';
+import ReactToPrint from "react-to-print";
 
 
 const PatientProfile = () => {
@@ -11,13 +12,18 @@ const PatientProfile = () => {
   const firstName = searchParams.get("firstName");
   const lastName = searchParams.get("lastName");
   const appointmentId = searchParams.get("appointmentId");
+  const [appointmentTypes, setAppointmentTypes] = useState({}); 
 
   const [patientData, setPatientData] = useState({});
   const [reports, setReports] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newReportContent, setNewReportContent] = useState("");
+  const [isAppointmentsFetched, setIsAppointmentsFetched] = useState(false); 
+  const [editingReport, setEditingReport] = useState(null);
+  const printableRef = useRef();
+  const navigate = useNavigate();
 
-  // Fetch osnovne podatke
+ 
   const fetchPatientData = async () => {
     try {
       const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
@@ -27,22 +33,36 @@ const PatientProfile = () => {
    
       
       const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
-      console.log(patientDetailsResponse)
+      
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
       console.error("Error fetching patient data:", error);
     }
   };
 
-  // Fetch reporte
+
   const fetchReports = async () => {
     try {
       const response = await axios.get("http://localhost:8080/reports/perPatient", {
         params: { firstName, lastName },
       });
+      console.log(response.data);
       setReports(response.data);
     } catch (error) {
       console.error("Error fetching reports:", error);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const types = {}; 
+      for (const report of reports) {
+        const typeResponse = await axios.get(`http://localhost:8080/appointments/type/${report.appointment_id}`);
+        types[report.id] = typeResponse.data.name; 
+      }
+      setAppointmentTypes(types);
+    } catch (error) {
+      console.error("Error fetching appointment types:", error);
     }
   };
 
@@ -61,10 +81,29 @@ const PatientProfile = () => {
     }
   };
 
+  const handleEditReport = (report) => {
+    setEditingReport(report);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await axios.put(`http://localhost:8080/reports/${editingReport.id}`, editingReport);
+      setEditingReport(null);
+      fetchReports();
+    } catch (error) {
+      console.error("Error saving edited report:", error);
+    }
+  };
+
+
   useEffect(() => {
     fetchPatientData();
     fetchReports();
-  }, [firstName, lastName]);
+    if (reports.length > 0  && !isAppointmentsFetched ) {
+      fetchAppointments();
+      setIsAppointmentsFetched(true);
+    }
+  }, [firstName, lastName,reports, isAppointmentsFetched]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#006A6A" }}>
@@ -74,6 +113,7 @@ const PatientProfile = () => {
             Patient Profile
           </Typography>
         </Toolbar>
+        
       </AppBar>
 
       <Container sx={{ flexGrow: 1, marginY: 2 }}>
@@ -107,7 +147,7 @@ const PatientProfile = () => {
       <Typography variant="body1" color="textSecondary">Phone</Typography>
       <Typography variant="body1">{patientData.phone}</Typography>
     </Grid>
-    <Grid item xs={12} sm={6}>
+    <Grid item xs={12} sm={12}>
       <Typography variant="body1" color="textSecondary">Email</Typography>
       <Typography variant="body1">{patientData.email}</Typography>
     </Grid>
@@ -133,8 +173,8 @@ const PatientProfile = () => {
     <Button
       variant="contained"
       color="primary"
-      sx={{ marginTop: 2 }}
-      onClick={() => setIsDialogOpen(true)}
+      sx={{ backgroundColor: "#4CAF50" , marginTop: 2 }}
+      onClick={() => navigate(`/new-report?appointmentId=${appointmentId}&patientName=${patientData.firstName}&patientLastName=${patientData.lastName}`)}
     >
       New Report
     </Button>
@@ -148,12 +188,24 @@ const PatientProfile = () => {
               Reports
             </Typography>
             {reports.map((report) => (
-              <Accordion key={report.id}>
+              <Accordion  key={report.id}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography>Report {report.id}</Typography>
+                  <Typography>Report - {appointmentTypes[report.id]}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>{report.content}</Typography>
+                  <Typography>Dg:{report.diagnosis_code}</Typography>
+                  <Typography>Therapy: {report.terapija}</Typography>
+                  <Typography>Recommendation: {report.preporuka}</Typography>
+                  <Typography>Medical history: {report.medical_history}</Typography>
+                  <Typography>Additonal text: {report.additional_text}</Typography>
+                  <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
+                  <Button variant="contained" color="primary" sx={{ backgroundColor: "#FF7043" }} onClick={() => handleEditReport(report)}>
+                      Edit
+                    </Button>
+                    <Button variant="contained" color="primary" sx={{ backgroundColor: "#4CAF50" }} onClick={() => handleEditReport(report)}>
+                      Print
+                    </Button>
+                  </Box>
                 </AccordionDetails>
               </Accordion>
             ))}
@@ -161,28 +213,7 @@ const PatientProfile = () => {
         </Box>
       </Container>
 
-      {/* Modal za kreiranje novog izveštaja */}
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-        <DialogTitle>Create New Report</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Report Content"
-            multiline
-            rows={4}
-            fullWidth
-            value={newReportContent}
-            onChange={(e) => setNewReportContent(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsDialogOpen(false)} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleCreateReport} color="primary">
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
+  
     </Box>
   );
 };

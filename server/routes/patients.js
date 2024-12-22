@@ -1,8 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const connection = require('../db');
+const { format } = require('date-fns');
 
-/* GET users listing. */
+
 router.get('/', function(req, res, next) {
 
     connection.query('SELECT * FROM patients', (err, results) => {
@@ -20,14 +21,12 @@ router.get('/getPatientId', (req, res) => {
   
   const { firstName, lastName } = req.query;
 
-  // Validacija ulaznih podataka
+  
   if (!firstName || !lastName) {
     return res.status(400).json({ error: 'First name and last name are required' });
   }
 
-  console.log('dolazni parametri za getPatientId', { firstName, lastName });
-
-  // SQL upit za pronalaženje ID-a pacijenta
+  
   const query = `
     SELECT id FROM patients 
     WHERE first_name = ? AND last_name = ?
@@ -63,19 +62,24 @@ router.get('/:id', (req, res) => {
         }
 
         const patient = results[0];
+
+        const formattedDateOfBirth = patient.birthday 
+            ? format(new Date(patient.birthday), 'dd.MM.yyyy') 
+            : null;
+
         const response = {
             firstName: patient.first_name,
             lastName: patient.last_name,
             jmbg: patient.jmbg,
-            dateOfBirth: patient.birthday,
+            dateOfBirth: formattedDateOfBirth,
             phone: patient.phone,
             email: patient.email,
             address: patient.address,
             gender: patient.gender,
             emergencyContact: patient.emergency_contact,
         };
-        console.log('Odgvogor na metodu /id ', response);
-        res.json(response); // Vraćanje podataka u JSON formatu
+      
+        res.json(response); 
     });
 });
 

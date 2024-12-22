@@ -3,7 +3,6 @@ var router = express.Router();
 
 const connection = require('../db'); 
 
-/* GET users listing. */
 router.get('/', function(req, res, next) {
 
     connection.query('SELECT * FROM doctor', (err, results) => {

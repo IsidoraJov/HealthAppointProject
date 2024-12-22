@@ -14,16 +14,31 @@ router.get('/', function(req, res, next) {
         }
       });
 });
-//ispravi za profile pacijenata
+
+router.get('/diagnosis', function(req, res, next) {
+  
+  connection.query('SELECT * FROM diagnosis', (err, results) => {
+    
+      if (err) {
+        res.status(500).send('Greška pri dobijanju podataka.');
+      } else {
+      
+        res.json(results)
+      
+      }
+    });
+});
+
+
 router.get('/perPatient', (req, res) => {
   
-  const { firstName, lastName } = req.query; // Očekujemo query parametre
+  const { firstName, lastName } = req.query; 
 
   if (!firstName || !lastName) {
     return res.status(400).json({ error: 'First name and last name are required' });
   }
   console.log('GET /reports called with:', req.query);
-  // Prvo pronalazimo pacijenta po imenu i prezimenu
+  
   const getPatientQuery = `
     SELECT id FROM patients 
     WHERE first_name = ? AND last_name = ?
@@ -42,7 +57,7 @@ router.get('/perPatient', (req, res) => {
     const patientId = patientResults[0].id;
   
     console.log(patientId);
-    // Zatim dohvatamo sve termine za tog pacijenta
+   
     const getAppointmentsQuery = `
       SELECT id FROM appointments 
       WHERE patient_id = ?
@@ -58,10 +73,10 @@ router.get('/perPatient', (req, res) => {
         return res.status(404).json({ error: 'No appointments found for the patient' });
       }
 
-      // Izvlačimo ID-jeve termina
+      
       const appointmentIds = appointmentResults.map((appointment) => appointment.id);
 
-      // Dohvatamo sve izveštaje za te termine
+      
       const getReportsQuery = `
         SELECT * FROM reports 
         WHERE appointment_id IN (?)
@@ -77,7 +92,7 @@ router.get('/perPatient', (req, res) => {
           return res.status(404).json({ error: 'No reports found for the appointments' });
         }
 
-        // Vraćamo sve izveštaje u JSON formatu
+        
         return res.json(reportResults);
       });
     });

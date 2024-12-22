@@ -43,8 +43,9 @@ const Dashboard = () => {
   const fetchAppointments = async () => {
     try {
       const response = await axios.get("http://localhost:8080/appointments");
+      console.log(response.data);  
       const serverData = response.data;
-
+     
     
       const formattedEvents = serverData.map((appointment) => ({
             id: appointment.id, 
