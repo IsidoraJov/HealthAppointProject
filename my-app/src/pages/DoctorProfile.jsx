@@ -18,6 +18,7 @@ const DoctorProfile = () => {
     setDoctorData({ ...doctorData, [name]: value });
   };
 
+
   return (
     <Box sx={{ height: "100vh", backgroundColor: "#E0F2F1" }}>
       {/* Header */}

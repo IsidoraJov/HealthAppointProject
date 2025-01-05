@@ -4,12 +4,10 @@ import {
   Button,
   TextField,
   Typography,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Autocomplete,
   Container,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import axios from "axios";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -26,12 +24,13 @@ const NewReport = () => {
 
   const [diagnosisList, setDiagnosisList] = useState([]);
   const [formData, setFormData] = useState({
-    diagnosis_code: "",
+    diagnosis_code: [],
     terapija: "",
     preporuka: "",
     medical_history: "",
     additional_text: "",
   });
+  const [activeTab, setActiveTab] = useState(0);
 
   const fetchPatientData = async () => {
     try {
@@ -39,7 +38,6 @@ const NewReport = () => {
         params: { firstName, lastName },
       });
       const patientId = patientIdResponse.data.patientId;
-   
       
       const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
       
@@ -49,7 +47,6 @@ const NewReport = () => {
     }
   };
 
-  
   useEffect(() => {
     fetchPatientData();
     const fetchDiagnosis = async () => {
@@ -72,16 +69,12 @@ const NewReport = () => {
       [name]: value,
     });
   };
-  
-  const handleAutocompleteChange = (event, value) => {
-    setFormData({
-      ...formData,
-      diagnosis_code: value ? value.code : "", 
-    });
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
   };
 
-   
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
@@ -90,7 +83,7 @@ const NewReport = () => {
         ...formData,
       });
       alert("Report successfully created!");
-      navigate(-1); // Return to the previous page
+      navigate(-1); 
     } catch (error) {
       console.error("Error creating report:", error);
       alert("Failed to create report. Please try again.");
@@ -99,117 +92,178 @@ const NewReport = () => {
 
   const handlePrint = () => {
     const doc = new jsPDF();
-
+    const pageHeight = doc.internal.pageSize.height; // Visina stranice
+    let y = 20; // Početna Y koordinata
 
     const img = new Image();
     img.src = logo;
-    doc.addImage(img, 'PNG', 10, 10, 40, 20);
+    doc.addImage(img, "PNG", 10, 10, 40, 20);
 
-     // Trenutni datum i vreme
-     const now = new Date();
-     const dateTime = now.toLocaleString();
-     doc.setFontSize(10);
-     doc.rect(140, 10, 50, 15); 
-     doc.text(dateTime, 165, 20, { align: "center" });
- 
-     // Naslov "Medical Report"
-     doc.setFontSize(18);
-     doc.text("MEDICAL REPORT", 105, 40, { align: "center" });
- 
-     // Tabela sa osnovnim informacijama
-     doc.setFontSize(12);
-     doc.rect(10, 50, 190, 20); 
-     doc.text("Name:", 12, 58);
-     doc.text(patientData.firstName + " " + patientData.lastName || "", 30, 58);
-     doc.text("JMBG:", 12, 66);
-     doc.text(patientData.jmbg || "", 30, 66);
- 
-     doc.text("Birth Date:", 110, 58);
-     doc.text(patientData.dateOfBirth || "", 140, 58);
-     doc.text("Email/Phone:", 110, 66);
-     doc.text(patientData.email || "", 140, 66);
- 
-     // Polje za dijagnozu
-     doc.setFontSize(12);
-     doc.text("Diagnosis:", 12, 80);
-     doc.rect(10, 82, 190, 15); 
-     doc.setFontSize(12);
-     doc.text((formData.diagnosis_code ? formData.diagnosis_code + " " : "") + (formData.diagnosis_name || ""), 12, 90);
- 
-     // Polja za terapiju, preporuku, i istoriju
-     const sections = [
-         { title: "Therapy", y: 105, value: formData.terapija },
-         { title: "Recommendation", y: 130, value: formData.preporuka },
-         { title: "Medical History", y: 155, value: formData.medical_history }
-     ];
- 
-     sections.forEach((section) => {
-         doc.setFontSize(12);
-         doc.text(section.title + ":", 12, section.y);
-         doc.rect(10, section.y + 2, 190, 15); 
-         doc.setFontSize(12);
-         doc.text(section.value || "", 12, section.y + 10);
-     });
- 
-     // Polje za dodatni tekst
-     doc.setFontSize(12);
-     doc.text("Additional Text:", 12, 180);
-     doc.rect(10, 182, 190, 60); 
-     doc.setFontSize(10);
-     doc.text(formData.additional_text || "", 12, 190);
- 
-     // Linija za potpis
-     doc.line(140, 255, 190, 255); 
-     doc.setFontSize(10);
-     doc.text("John Doe", 140, 260);
-     doc.text("Cardiology", 140, 265);
- 
-     
-     doc.output("dataurlnewwindow");
- };
- 
+    const now = new Date();
+    const dateTime = now.toLocaleString();
+    doc.setFontSize(10);
+    doc.rect(140, 10, 50, 15);
+    doc.text(dateTime, 165, 20, { align: "center" });
+
+    doc.setFontSize(18);
+    doc.setTextColor("#006A6A");
+    doc.text("MEDICAL REPORT", 105, 40, { align: "center" });
+    y = 50;
+
+    // Osnovne informacije
+    doc.setFontSize(12);
+    doc.setDrawColor("#004D4D");
+    doc.setFillColor("#E6F2F2");
+    doc.rect(10, y, 190, 20, "F");
+    doc.setTextColor("black");
+    doc.text("Name:", 12, y + 8);
+    doc.text(patientData.firstName + " " + patientData.lastName || "", 30, y + 8);
+    doc.text("JMBG:", 12, y + 16);
+    doc.text(patientData.jmbg || "", 30, y + 16);
+
+    doc.text("Birth Date:", 110, y + 8);
+    doc.text(patientData.dateOfBirth || "", 140, y + 8);
+    doc.text("Email/Phone:", 110, y + 16);
+    doc.text(patientData.email || "", 140, y + 16);
+    y += 30;
+
+    // Dinamičko ispisivanje dijagnoza
+    doc.setFontSize(12);
+    doc.setTextColor("#006A6A");
+    doc.text("Diagnosis:", 12, y);
+    y += 7;//razmak između naslova i teksta za dijagnozu
+
+    const diagnosisHeight = formData.diagnosis_code.reduce((height, diagnosis) => {
+      const diagnosisText = diagnosis.code + " - " + diagnosis.name;
+      const splitDiagnosis = doc.splitTextToSize(diagnosisText, 180);
+      return height + splitDiagnosis.length * 5; // Svaka linija povećava visinu
+    }, 5);
+
+    doc.setDrawColor("#004D4D");
+    doc.rect(10, y - 5, 190, diagnosisHeight); // Crtanje okvira
+
+    doc.setTextColor("black");
+    formData.diagnosis_code.forEach((diagnosis) => {
+      const diagnosisText = diagnosis.code + " - " + diagnosis.name;
+      const splitDiagnosis = doc.splitTextToSize(diagnosisText, 180);
+      splitDiagnosis.forEach((line) => {
+        if (y + 10 > pageHeight) {
+          doc.addPage();
+          y = 10;
+        }
+        doc.text(line, 12, y);
+        y += 5;
+      });
+    });
+    y += 5;
+
+    const sections = [
+      { title: "Therapy", value: formData.terapija },
+      { title: "Recommendation", value: formData.preporuka },
+      { title: "Medical History", value: formData.medical_history },
+      { title: "Report", value: formData.additional_text },
+    ];
+
+    sections.forEach((section) => {
+      if (y + 20 > pageHeight) {
+        doc.addPage();
+        y = 10;
+      }
+    
+      doc.setFontSize(12);
+      doc.setTextColor("#006A6A");
+      doc.text(`${section.title}:`, 12, y);
+      y += 7;
+    
+      doc.setFontSize(12);
+      doc.setTextColor("black");
+      const splitText = doc.splitTextToSize(section.value || "", 180);
+      const sectionHeight = splitText.length * 5 + 5;
+    
+      doc.setDrawColor("#004D4D");
+      doc.rect(10, y - 5, 190, sectionHeight);
+    
+      splitText.forEach((line) => {
+        if (y + 10 > pageHeight) {
+          doc.addPage();
+          y = 10;
+        }
+        doc.text(line, 12, y);
+        y += 5;
+      });
+      y += 5;
+    });
+
+    if (y + 20 > pageHeight) {
+      doc.addPage();
+      y = 10;
+    }
+    doc.setDrawColor("#004D4D");
+    doc.line(140, y + 10, 190, y + 10);
+    doc.text("John Doe", 140, y + 15);
+    doc.text("Cardiology", 140, y + 20);
+
+    doc.output("dataurlnewwindow");
+  };
 
   return (
     <Container
-    maxWidth={false} 
-    disableGutters 
-    sx={{
-      backgroundColor: "#006A6A", 
-      minHeight: "100vh", 
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      width: "100vw", 
-    }}
-  >
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
+      maxWidth={false} 
+      disableGutters 
       sx={{
+        backgroundColor: "#006A6A", 
+        minHeight: "100vh", 
         display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        p: 3,
-        backgroundColor: "white", 
-        borderRadius: 2,
-        boxShadow: 3,
-        width: "100%",
-        maxWidth: "500px", 
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100vw", 
       }}
     >
-      <Typography variant="h5" gutterBottom>
-        New Report
-      </Typography>
-  
-      <Autocomplete
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          p: 3,
+          backgroundColor: "white", 
+          borderRadius: 2,
+          boxShadow: 3,
+          width: "100%",
+          maxWidth: "800px", 
+        }}
+      >
+        <Typography variant="h5" gutterBottom>
+          New Report
+        </Typography>
+        
+        <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          mb: 3,
+          p: 2,
+          backgroundColor: "#E6F2F2",
+          borderRadius: 2,
+        }}
+      >
+        <Typography><strong>Name:</strong> {patientData.firstName} {patientData.lastName}</Typography>
+        <Typography><strong>JMBG:</strong> {patientData.jmbg}</Typography>
+        <Typography><strong>Birth Date:</strong> {patientData.dateOfBirth}</Typography>
+        <Typography><strong>Email:</strong> {patientData.email}</Typography>
+      </Box>
+      
+        <Autocomplete
+          multiple
           options={diagnosisList}
           getOptionLabel={(option) => `${option.code} - ${option.name}`}
           isOptionEqualToValue={(option, value) => option.code === value.code}
           onChange={(event, value) =>
             setFormData({
               ...formData,
-              diagnosis_code: value ? value.code : "",
-              diagnosis_name: value ? value.name : "",
+              diagnosis_code: value,
             })
           }
           renderInput={(params) => (
@@ -221,54 +275,81 @@ const NewReport = () => {
           )}
         />
 
-    
-      <TextField
-        label="Therapy"
-        name="terapija"
-        value={formData.terapija}
-        onChange={handleChange}
-        fullWidth
-      />
-  
-      <TextField
-        label="Recommendation"
-        name="preporuka"
-        value={formData.preporuka}
-        onChange={handleChange}
-        fullWidth
-      />
-  
-      <TextField
-        label="Medical History"
-        name="medical_history"
-        value={formData.medical_history}
-        onChange={handleChange}
-        fullWidth
-      />
-  
-      <TextField
-        label="Additional Text"
-        name="additional_text"
-        value={formData.additional_text}
-        onChange={handleChange}
-        fullWidth
-        multiline
-        rows={4}
-      />
-  
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Button type="submit" variant="contained" color="primary">
-          Save Report
-        </Button>
-        <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
-          Cancel
-        </Button>
-        <Button variant="contained" color="success" onClick={handlePrint}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
+          sx={{ mb: 2 }}
+        >
+          <Tab label="Therapy" />
+          <Tab label="Recommendation" />
+          <Tab label="Medical History" />
+          <Tab label="Report" />
+        </Tabs>
+
+        {activeTab === 0 && (
+          <TextField
+            label="Therapy"
+            name="terapija"
+            value={formData.terapija}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={8}
+          />
+        )}
+
+        {activeTab === 1 && (
+          <TextField
+            label="Recommendation"
+            name="preporuka"
+            value={formData.preporuka}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={8}
+          />
+        )}
+
+        {activeTab === 2 && (
+          <TextField
+            label="Medical History"
+            name="medical_history"
+            value={formData.medical_history}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={8}
+          />
+        )}
+
+        {activeTab === 3 && (
+          <TextField
+            label="Report"
+            name="additional_text"
+            value={formData.additional_text}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={8}
+          />
+        )}
+
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+          <Button type="submit" variant="contained" color="primary">
+            Save Report
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
+          <Button variant="contained" color="success" onClick={handlePrint}>
             Print
           </Button>
+        </Box>
       </Box>
-    </Box>
-  </Container>
+    </Container>
   );
 };
 

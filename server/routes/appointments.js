@@ -6,7 +6,7 @@ const connection = require('../db');
 router.get('/', function(req, res, next) {
   
     const query = `
-    SELECT appointments.id, appointments.start_time, appointments.end_time, patients.first_name, patients.last_name
+    SELECT appointments.id, appointments.start_time, appointments.end_time, appointments.patient_id, patients.first_name, patients.last_name
     FROM appointments
     JOIN patients ON appointments.patient_id = patients.id
   `; 
@@ -17,6 +17,7 @@ router.get('/', function(req, res, next) {
       
       const formattedResults = results.map((appointment) => ({
         id: appointment.id,
+        patient_id: appointment.patient_id,
         title: `${appointment.first_name} ${appointment.last_name}`,
         start: appointment.start_time,
         end: appointment.end_time,  

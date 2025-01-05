@@ -26,6 +26,7 @@ const PatientProfile = () => {
  
   const fetchPatientData = async () => {
     try {
+      console.log('fetch patient data')
       const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
         params: { firstName, lastName },
       });
@@ -43,10 +44,11 @@ const PatientProfile = () => {
 
   const fetchReports = async () => {
     try {
+      console.log('fetch reports')
       const response = await axios.get("http://localhost:8080/reports/perPatient", {
         params: { firstName, lastName },
       });
-      console.log(response.data);
+      
       setReports(response.data);
     } catch (error) {
       console.error("Error fetching reports:", error);
@@ -55,6 +57,7 @@ const PatientProfile = () => {
 
   const fetchAppointments = async () => {
     try {
+      console.log('fetch appointments')
       const types = {}; 
       for (const report of reports) {
         const typeResponse = await axios.get(`http://localhost:8080/appointments/type/${report.appointment_id}`);
@@ -95,15 +98,18 @@ const PatientProfile = () => {
     }
   };
 
-
   useEffect(() => {
     fetchPatientData();
     fetchReports();
+  },[])
+
+  useEffect(() => {
+    console.log(reports);
     if (reports.length > 0  && !isAppointmentsFetched ) {
       fetchAppointments();
       setIsAppointmentsFetched(true);
     }
-  }, [firstName, lastName,reports, isAppointmentsFetched]);
+  }, [reports, isAppointmentsFetched]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#006A6A" }}>

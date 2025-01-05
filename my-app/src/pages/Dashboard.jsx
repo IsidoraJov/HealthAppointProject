@@ -43,17 +43,18 @@ const Dashboard = () => {
   const fetchAppointments = async () => {
     try {
       const response = await axios.get("http://localhost:8080/appointments");
-      console.log(response.data);  
+      
       const serverData = response.data;
      
     
       const formattedEvents = serverData.map((appointment) => ({
             id: appointment.id, 
+            patientId: appointment.patient_id,
             title: appointment.title, 
             start: appointment.start, 
             end: appointment.end,   
         }));
-
+        
         setEvents(formattedEvents); 
         } catch (error) {
         console.error("Error fetching appointments:", error);
@@ -174,6 +175,7 @@ const Dashboard = () => {
                 height="80vh"
                 eventClick={(info) => {
                   const { title, id: appointmentId } = info.event;
+                  console.log(info);
                   const [firstName, lastName] = title.split(" "); 
                   navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
                 }}
