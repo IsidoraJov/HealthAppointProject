@@ -8,10 +8,10 @@ import interactionPlugin from "@fullcalendar/interaction";
 import logo from "../assets/images/logoB.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
-const Dashboard = () => {
+const StaffDashboard = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
@@ -60,6 +60,50 @@ const Dashboard = () => {
       end_time: endTime,
     };
     console.log("Appointment Data:", appointmentData);
+  };
+
+  const [patientData, setPatientData] = useState({
+    firstName: "",
+    lastName: "",
+    birthday: null,
+    jmbg: "",
+    phone: "",
+    email: "",
+    address: "",
+    gender: "",
+    maritalStatus: "",
+    emergencyContact: "",
+    language: "",
+  });
+
+  const handleInputChange = (field, value) => {
+    setPatientData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const handleSavePatient = async () => {
+    try {
+      const response = await axios.post("http://localhost:8080/patients/add", patientData);
+      alert("Patient added successfully!");
+      setPatientData({
+        firstName: "",
+        lastName: "",
+        birthday: null,
+        jmbg: "",
+        phone: "",
+        email: "",
+        address: "",
+        gender: "",
+        maritalStatus: "",
+        emergencyContact: "",
+        language: "",
+      });
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      alert("An error occurred while adding the patient.");
+    }
   };
 
   return (
@@ -132,7 +176,7 @@ const Dashboard = () => {
             onChange={(event, value) => setSelectedType(value)}
           />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
+            <DatePicker
               label="Start Time"
               value={startTime}
               onChange={(newValue) => setStartTime(newValue)}
@@ -140,7 +184,7 @@ const Dashboard = () => {
             />
           </LocalizationProvider>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
+            <DatePicker
               label="End Time"
               value={endTime}
               onChange={(newValue) => setEndTime(newValue)}
@@ -161,19 +205,81 @@ const Dashboard = () => {
       <Box sx={{ backgroundColor: "white", padding: 4, marginY: 2, borderRadius: 2, boxShadow: 3, marginX: 2 }}>
         <Typography variant="h6" gutterBottom>Add Patient</Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField label="First Name" variant="outlined" />
-          <TextField label="Last Name" variant="outlined" />
-          <TextField label="JMBG" variant="outlined" />
-          <TextField label="Date of Birth" variant="outlined" />
-          <TextField label="Phone" variant="outlined" />
-          <TextField label="Email" variant="outlined" />
-          <TextField label="Address" variant="outlined" />
+          <TextField
+            label="First Name"
+            variant="outlined"
+            value={patientData.firstName}
+            onChange={(e) => handleInputChange("firstName", e.target.value)}
+          />
+          <TextField
+            label="Last Name"
+            variant="outlined"
+            value={patientData.lastName}
+            onChange={(e) => handleInputChange("lastName", e.target.value)}
+          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Birthday"
+              value={patientData.birthday}
+              onChange={(newValue) => handleInputChange("birthday", newValue)}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </LocalizationProvider>
+          <TextField
+            label="JMBG"
+            variant="outlined"
+            value={patientData.jmbg}
+            onChange={(e) => handleInputChange("jmbg", e.target.value)}
+          />
+          <TextField
+            label="Phone"
+            variant="outlined"
+            value={patientData.phone}
+            onChange={(e) => handleInputChange("phone", e.target.value)}
+          />
+          <TextField
+            label="Email"
+            variant="outlined"
+            value={patientData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+          />
+          <TextField
+            label="Address"
+            variant="outlined"
+            value={patientData.address}
+            onChange={(e) => handleInputChange("address", e.target.value)}
+          />
           <Autocomplete
             options={["Male", "Female"]}
             renderInput={(params) => <TextField {...params} label="Gender" />}
+            value={patientData.gender}
+            onChange={(event, value) => handleInputChange("gender", value)}
           />
-          <TextField label="Emergency Contact" variant="outlined" />
-          <Button variant="contained" color="primary">Add Patient</Button>
+          <TextField
+            label="Marital Status"
+            variant="outlined"
+            value={patientData.maritalStatus}
+            onChange={(e) => handleInputChange("maritalStatus", e.target.value)}
+          />
+          <TextField
+            label="Emergency Contact"
+            variant="outlined"
+            value={patientData.emergencyContact}
+            onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
+          />
+          <TextField
+            label="Language"
+            variant="outlined"
+            value={patientData.language}
+            onChange={(e) => handleInputChange("language", e.target.value)}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSavePatient}
+          >
+            Add Patient
+          </Button>
         </Box>
       </Box>
 
@@ -207,4 +313,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default StaffDashboard;

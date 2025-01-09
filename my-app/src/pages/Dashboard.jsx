@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem , Tab, Tabs} from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Tab, Tabs } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid"; 
@@ -10,7 +10,7 @@ import logo from "../assets/images/logoB.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AddAppointmentForm from "./AddAppointmentForm";
-
+import AddPatientForm from "./AddPatientForm";
 
 const Dashboard = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -19,13 +19,15 @@ const Dashboard = () => {
 
   const [tabValue, setTabValue] = useState(0); // (0 - mesecni, 1 - dnevni)
 
-  const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [isPatientFormOpen, setIsPatientFormOpen] = React.useState(false);
+  const [isAppointmentFormOpen, setIsAppointmentFormOpen] = React.useState(false);
 
-  console.log("Is form open:", isFormOpen);
+  const handleClosePatientForm = () => {
+    setIsPatientFormOpen(false); 
+  };
 
-  const handleCloseForm = () => {
-    console.log("Closing form...");
-    setIsFormOpen(false); 
+  const handleCloseAppointmentForm = () => {
+    setIsAppointmentFormOpen(false);
   };
 
   const handleTabChange = (event, newValue) => {
@@ -34,19 +36,14 @@ const Dashboard = () => {
 
   const handleNavigate = (path) => {
     console.log(`Navigacija ka: ${path}`);
-    //  logiku 
   }; 
   const navigate = useNavigate();
-
 
   const [events, setEvents] = useState([]);
   const fetchAppointments = async () => {
     try {
       const response = await axios.get("http://localhost:8080/appointments");
-      
       const serverData = response.data;
-     
-    
       const formattedEvents = serverData.map((appointment) => ({
             id: appointment.id, 
             patientId: appointment.patient_id,
@@ -54,14 +51,12 @@ const Dashboard = () => {
             start: appointment.start, 
             end: appointment.end,   
         }));
-        
         setEvents(formattedEvents); 
         } catch (error) {
         console.error("Error fetching appointments:", error);
         }
     };
 
-    
     useEffect(() => {
         fetchAppointments();
     }, []);
@@ -112,7 +107,6 @@ const Dashboard = () => {
         </Button>
       </Box>
     
-        
       {/* Kalendar */}
       <Container sx={{ flexGrow: 1, marginY: 2 }}>
         <Grid container justifyContent="center">
@@ -122,81 +116,73 @@ const Dashboard = () => {
             </Typography>
 
             <Box sx={{ marginBottom: 4 }}>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, marginBottom: 2 }}>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => console.log("Add Patient")}
-                        sx={{ backgroundColor: "#FF7043" }}
-                    >
-                        Add Patient
-                    </Button>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, marginBottom: 2 }}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => setIsPatientFormOpen(true)}
+                  sx={{ backgroundColor: "#FF7043" }}
+                >
+                  Add Patient
+                </Button>
 
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ backgroundColor: "#4CAF50" }}
-                        onClick={() => setIsFormOpen(true)}
-                    >
-                        Add Appointment
-                    </Button>
+                <AddPatientForm
+                  open={isPatientFormOpen}
+                  onClose={handleClosePatientForm}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ backgroundColor: "#4CAF50" }}
+                  onClick={() => setIsAppointmentFormOpen(true)}
+                >
+                  Add Appointment
+                </Button>
 
-                    {/* Forma za dodavanje termina */}
-                    <AddAppointmentForm
-                        open={isFormOpen}
-                        onClose={handleCloseForm}
-                    />
-                    </Box>
-                </Box>  
+                <AddAppointmentForm
+                  open={isAppointmentFormOpen}
+                  onClose={handleCloseAppointmentForm}
+                />
+              </Box>
+            </Box>  
             <Box sx={{ backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
-             {/* <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                events={events}
-                editable
-                selectable
-                height="80vh"
-              />*/}
               <Box sx={{ width: '100%' }}>
-      <Tabs value={tabValue} onChange={handleTabChange} centered>
-        <Tab label="Monthly view" />
-        <Tab label="Daily view" />
-      </Tabs>
+                <Tabs value={tabValue} onChange={handleTabChange} centered>
+                  <Tab label="Monthly view" />
+                  <Tab label="Daily view" />
+                </Tabs>
 
-      <Box sx={{ padding: '20px' }}>
-       
-        {tabValue === 0 && (
-          <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                events={events}
-                editable
-                selectable
-                height="80vh"
-                eventClick={(info) => {
-                  const { title, id: appointmentId } = info.event;
-                  console.log(info);
-                  const [firstName, lastName] = title.split(" "); 
-                  navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
-                }}
-          />
-        )}
+                <Box sx={{ padding: '20px' }}>
+                  {tabValue === 0 && (
+                    <FullCalendar
+                      plugins={[dayGridPlugin, interactionPlugin]}
+                      initialView="dayGridMonth"
+                      events={events}
+                      editable
+                      selectable
+                      height="80vh"
+                      eventClick={(info) => {
+                        const { title, id: appointmentId } = info.event;
+                        const [firstName, lastName] = title.split(" "); 
+                        navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
+                      }}
+                    />
+                  )}
 
-        {/* FullCalendar za dnevni prikaz */}
-        {tabValue === 1 && (
-          <FullCalendar
-            plugins={[timeGridPlugin, interactionPlugin]}
-            initialView="timeGridDay" // Dnevni prikaz
-            events={events}
-            eventClick={(info) => {
-              const { title, id: appointmentId } = info.event;
-              const [firstName, lastName] = title.split(" "); 
-              navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
-            }}
-          />
-        )}
-      </Box>
-    </Box>
+                  {tabValue === 1 && (
+                    <FullCalendar
+                      plugins={[timeGridPlugin, interactionPlugin]}
+                      initialView="timeGridDay"
+                      events={events}
+                      eventClick={(info) => {
+                        const { title, id: appointmentId } = info.event;
+                        const [firstName, lastName] = title.split(" "); 
+                        navigate(`/patient-profile?firstName=${firstName}&lastName=${lastName}&appointmentId=${appointmentId}`);
+                      }}
+                    />
+                  )}
+                </Box>
+              </Box>
             </Box>
           </Grid>
         </Grid>

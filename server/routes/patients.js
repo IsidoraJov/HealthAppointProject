@@ -82,32 +82,69 @@ router.get('/:id', (req, res) => {
         res.json(response); 
     });
 });
+const addNewPatient = (firstName, lastName, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res) => {
 
-  const addNewPatient = (firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res) => {
-    const query = `
-        INSERT INTO patients (first_name, last_name, username, birthday, jmbg, phone, email, address, gender, marital_status, emergency_contact, language)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    
-    connection.execute(query, [firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language], (err, results) => {
-        if (err) {
-            console.error("Error while adding user:", err);
-            res.status(500).send("Error adding user");
-            return;
-        }
-        res.status(200).send(`User added successfully with ID: ${results.insertId}`);
+  const generateUsername = (firstName, lastName) => {
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    return `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${randomNum}`;
+  };
+
+  const isValidJMBG = (jmbg) => /^[0-9]{13}$/.test(jmbg);
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPhone = (phone) => /^[0-9\-\+]{9,15}$/.test(phone);
+
+  // Validacija pojedinačnih polja
+  if (!isValidJMBG(jmbg)) {
+    return res.status(400).send("Invalid JMBG. It must contain exactly 13 digits.");
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).send("Invalid email address.");
+  }
+
+  if (!isValidPhone(phone)) {
+    return res.status(400).send("Invalid phone number. It must contain 9-15 digits and can include '+' or '-'.");
+  }
+
+  // Validacija datuma rođenja
+  const birthdayDate = new Date(birthday);
+  if (isNaN(birthdayDate.getTime())) {
+    return res.status(400).send("Invalid birthday format. Use YYYY-MM-DD.");
+  }
+
+  const username = generateUsername(firstName, lastName);
+
+  const query = `
+    INSERT INTO patients (first_name, last_name, username, birthday, jmbg, phone, email, address, gender, marital_status, emergency_contact, language)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  connection.execute(query, [firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language], (err, results) => {
+    if (err) {
+      console.error("Error while adding user:", err);
+      return res.status(500).send("Error adding user");
+    }
+    return res.status(200).send({
+      message: "User added successfully",
+      patient: {
+        id: results.insertId,
+        firstName,
+        lastName,
+        username,
+      },
     });
+  });
 };
 
 router.post('/add', (req, res) => {
-    const { firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language } = req.body;
+  console.log("Request body:", req.body);
+  const { firstName, lastName, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language } = req.body;
 
-    if (!firstName || !lastName || !username || !birthday || !jmbg || !phone || !email || !address || !gender || !maritalStatus || !emergencyContact || !language) {
-        return res.status(400).send('All fields are required');
-    }
+  if (!firstName || !lastName || !birthday || !jmbg || !phone || !email || !address || !gender || !maritalStatus || !emergencyContact || !language) {
+    return res.status(400).send('All fields are required');
+  }
 
-
-    addNewPatient(firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res);
+  addNewPatient(firstName, lastName, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res);
 });
 
 router.delete('/delete/:id', (req, res) => {
