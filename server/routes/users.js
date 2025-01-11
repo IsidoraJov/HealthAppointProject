@@ -15,5 +15,8 @@ router.get('/', function(req, res, next) {
   });
 
 });
+router.get("/test", (req, res) => {
+  res.send("Backend radi!");
+});
 
 module.exports = router;

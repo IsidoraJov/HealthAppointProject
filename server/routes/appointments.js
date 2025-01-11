@@ -24,7 +24,7 @@ router.get('/', function(req, res, next) {
       }));
 
       res.json(formattedResults);  
-      console.log(formattedResults);  
+     
     }
   });
 });
@@ -58,54 +58,55 @@ router.get('/', function(req, res, next) {
     }
   });
 }); */
+
 router.post("/add", (req, res) => {
-    const {
-        patient_id,
-        doctor_id,
-        type_id,
-        start_time,
-        end_time,
-        status,
-        reminder_sent,
-        confirmation_sent,
-        additional_text,
-    } = req.body;
+  const { patient, doctor, type, start_time, end_time, additional_text } = req.body;
 
+  if (!patient || !doctor || !type || !start_time || !end_time) {
+      return res.status(400).json({ error: "Missing required fields." });
+  }
 
-    if (!patient_id || !doctor_id || !type_id || !start_time || !end_time || !status) {
-        return res.status(400).json({ error: "Missing required fields." });
-    }
+  const sqlFindIds = `
+      SELECT 
+          (SELECT id FROM patients WHERE CONCAT(first_name, ' ', last_name) = ?) AS patient_id,
+          (SELECT id FROM doctor WHERE CONCAT(first_name, ' ', last_name) = ?) AS doctor_id,
+          (SELECT id FROM appointments_type WHERE name = ?) AS type_id
+  `;
 
+  connection.query(sqlFindIds, [patient, doctor, type], (err, results) => {
+      if (err) {
+          console.error("Error finding IDs:", err);
+          return res.status(500).json({ error: "Database error." });
+      }
 
-    const sql = `
-        INSERT INTO appointments 
-        (patient_id, doctor_id, type_id, start_time, end_time, status, reminder_sent, confirmation_sent, additional_text)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+      const { patient_id, doctor_id, type_id } = results[0];
+      if (!patient_id || !doctor_id || !type_id) {
+          return res.status(404).json({ error: "One or more entities not found." });
+      }
 
-    const values = [
-        patient_id,
-        doctor_id,
-        type_id,
-        start_time,
-        end_time,
-        status,
-        reminder_sent || 0, // Default to 0 if not provided
-        confirmation_sent || 0, // Default to 0 if not provided
-        additional_text || "", // Default to empty string if not provided
-    ];
+      const sqlInsert = `
+          INSERT INTO appointments 
+          (patient_id, doctor_id, type_id, start_time, end_time, status, reminder_sent, confirmation_sent, additional_text)
+          VALUES (?, ?, ?, ?, ?, 'scheduled', 0, 0, ?)
+      `;
 
-    connection.query(sql, values, (err, result) => {
-        if (err) {
-            console.error("Error adding appointment:", err);
-            return res.status(500).json({ error: "Database error." });
-        }
-        res.status(201).json({
-            message: "Appointment added successfully!",
-            appointment_id: result.insertId,
-        });
-    });
+      connection.query(
+          sqlInsert,
+          [patient_id, doctor_id, type_id, start_time, end_time, additional_text],
+          (err, result) => {
+              if (err) {
+                  console.error("Error adding appointment:", err);
+                  return res.status(500).json({ error: "Database error." });
+              }
+              res.status(201).json({
+                  message: "Appointment added successfully!",
+                  appointment_id: result.insertId,
+              });
+          }
+      );
+  });
 });
+
 
 router.get('/type', function(req, res, next) {
 

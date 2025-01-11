@@ -39,6 +39,23 @@ const Dashboard = () => {
   }; 
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      
+      await fetch('http://localhost:8080/logout', {
+        method: 'POST',
+        credentials: 'include', 
+      });
+  
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+ 
+
   const [events, setEvents] = useState([]);
   const fetchAppointments = async () => {
     try {
@@ -89,7 +106,7 @@ const Dashboard = () => {
           {/* Meni za profil */}
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
             <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
-            <MenuItem onClick={() => handleNavigate("/login")}>Logout</MenuItem>
+            <MenuItem onClick={() => handleLogout()}>Logout</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

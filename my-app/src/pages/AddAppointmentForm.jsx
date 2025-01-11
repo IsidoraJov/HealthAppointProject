@@ -22,8 +22,9 @@ const AddAppointmentForm = ({ open, onClose }) => {
   const [selectedType, setSelectedType] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [additionalText, setAdditionalText] = useState("");
+  const [loading, setLoading] = useState(false);
 
- 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -57,30 +58,70 @@ const AddAppointmentForm = ({ open, onClose }) => {
     fetchAppointmentTypes();
   }, []);
 
-  const handleSave = () => {
-    
-    if (!selectedDoctor || !selectedPatient || !selectedType || !startTime || !endTime) {
-        alert("All fields are required!");
-        return;
+  const checkDoctorAvailability = async () => {
+    if (!selectedDoctor || !startTime || !endTime) {
+      alert("Please select a doctor, start time, and end time!");
+      return false;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:8080/doctors/check-availability", {
+        doctor_id: selectedDoctor.id,
+        start_time: startTime,
+        end_time: endTime,
+      });
+
+      if (response.data.available) {
+        return true;
+      } else {
+        alert("The doctor is not available in the selected time slot.");
+        return false;
       }
-
-    const appointmentData = {
-      doctor: selectedDoctor,
-      patient: selectedPatient,
-      type: selectedType,
-      start_time: startTime,
-      end_time: endTime,
-    };
-    console.log("Appointment Data:", appointmentData);
-    //  POST 
-    onClose();
-
-    console.log("Dialog open prop:", open);
+    } catch (error) {
+      console.error("Error checking doctor availability:", error);
+      alert("Failed to check doctor availability. Please try again.");
+      return false;
+    }
   };
 
+  const handleSave = async () => {
+    if (!selectedDoctor || !selectedPatient || !selectedType || !startTime || !endTime) {
+      alert("All fields are required!");
+      return;
+    }
+
+    setLoading(true);
+
+    const isAvailable = await checkDoctorAvailability();
+    if (!isAvailable) {
+      setLoading(false);
+      return;
+    }
+
+    const appointmentData = {
+      doctor: `${selectedDoctor.first_name} ${selectedDoctor.last_name}`,
+      patient: `${selectedPatient.first_name} ${selectedPatient.last_name}`,
+      type: selectedType.name,
+      start_time: startTime,
+      end_time: endTime,
+      additional_text: additionalText,
+    };
+
+    try {
+      const response = await axios.post("http://localhost:8080/appointments/add", appointmentData);
+      console.log("Appointment saved successfully:", response.data);
+      alert("Appointment added successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error saving appointment:", error);
+      alert("Failed to add appointment.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth  sx={{ zIndex: 1300 }}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth sx={{ zIndex: 1300 }}>
       <DialogTitle>Add Appointment</DialogTitle>
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -130,14 +171,23 @@ const AddAppointmentForm = ({ open, onClose }) => {
               renderInput={(params) => <TextField {...params} />}
             />
           </LocalizationProvider>
+
+          {/* Additional Text Field */}
+          <TextField
+            label="Additional Text"
+            multiline
+            rows={4}
+            value={additionalText}
+            onChange={(e) => setAdditionalText(e.target.value)}
+          />
         </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">
           Cancel
         </Button>
-        <Button onClick={handleSave} color="primary" variant="contained">
-          Save
+        <Button onClick={handleSave} color="primary" variant="contained" disabled={loading}>
+          {loading ? "Saving..." : "Save"}
         </Button>
       </DialogActions>
     </Dialog>

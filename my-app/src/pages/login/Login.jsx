@@ -1,49 +1,85 @@
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography, Link, Grid, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import CryptoJS from "crypto-js";
 import logo from '../../assets/images/logo.png';
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  //localStorage.setItem("userId", userId);
-  // localsStroga.getItem("userId");
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-   
+
     if (!formData.username || !formData.password) {
       setError("Molimo vas da popunite sva polja.");
       return;
     }
-    alert("Prijavljeni ste!");
+
+    try {
+      // Šifrovanje podataka
+      const encryptedData = {
+        username: CryptoJS.AES.encrypt(formData.username, "tajni_kljuc").toString(),
+        password: CryptoJS.AES.encrypt(formData.password, "tajni_kljuc").toString(),
+      };
+      
+      // Slanje zahteva na backend
+      const response = await fetch("http://localhost:8080/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(encryptedData),
+        credentials: "include", // Omogućava slanje i primanje kolačića
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Greška prilikom logovanja.");
+      }
+
+      localStorage.setItem('role_id', data.role_id);
+      localStorage.setItem('userId', data.id);
+
+      if (data.role_id === "1") {
+        localStorage.setItem('role_id', 'JohnDoe');
+        navigate("/dashboard");
+      } else if (data.role_id === "2") {
+        navigate("/staffDashboard");
+      }
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
       {/* Levi deo */}
       <Grid
-    item
-    xs={false}
-    sm={4}
-    md={7}
-  >
-    <Box
-      component="img"
-      sx={{
-        height: "100%", 
-        width: "100%",  
-        objectFit: "cover", 
-      }}
-      src={logo} 
-      alt="Opis slike"
-    />
-  </Grid>
+        item
+        xs={false}
+        sm={4}
+        md={7}
+      >
+        <Box
+          component="img"
+          sx={{
+            height: "100%", 
+            width: "100%",  
+            objectFit: "cover", 
+          }}
+          src={logo} 
+          alt="Opis slike"
+        />
+      </Grid>
       {/* Desni deo */}
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <Box
