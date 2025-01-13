@@ -1,23 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Box, Button, Card, CardContent, Typography, TextField } from "@mui/material";
 
 const DoctorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
-
-
   const [doctorData, setDoctorData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    specialization: "Cardiology",
+    firstName: "",
+    lastName: "",
+    email: "",
+    specialization: "",
   });
 
-  const handleEdit = () => setIsEditing((prev) => !prev);
+  useEffect(() => {
+    const doctorId = localStorage.getItem("userId");
+    if (doctorId) {
+      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
+        .then(response => {
+    
+          setDoctorData(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching doctor data:", error);
+        });
+    }
+  }, []);
+
+  const handleEdit = () => {
+    if (isEditing) {
+      const doctorId = localStorage.getItem("doctorId");
+      axios.post("http://localhost:8080/doctors/update", doctorData)
+        .then(response => {
+          console.log("Doctor data updated successfully:", response.data);
+          setIsEditing(false);
+        })
+        .catch(error => {
+          console.error("Error updating doctor data:", error);
+        });
+    } else {
+      setIsEditing(true);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDoctorData({ ...doctorData, [name]: value });
   };
-
 
   return (
     <Box sx={{ height: "100vh", backgroundColor: "#E0F2F1" }}>
@@ -26,7 +53,7 @@ const DoctorProfile = () => {
         <Typography variant="h4" fontWeight="bold">Doctor Profile</Typography>
       </Box>
 
-      {/* Profil podaci */}
+      {/* Profile Data */}
       <Box sx={{ display: "flex", justifyContent: "center", marginTop: 5 }}>
         <Card sx={{ maxWidth: 600, width: "100%", boxShadow: 3, padding: 3, borderRadius: 2 }}>
           <CardContent>

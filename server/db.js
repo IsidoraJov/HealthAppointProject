@@ -18,3 +18,9 @@ connection.connect((err) => {
 });
 
 module.exports = connection;
+
+module.exports.closeConnection = () => {
+  connection.end((err) => {
+    if (err) console.error("Error closing database connection:", err);
+  });
+};

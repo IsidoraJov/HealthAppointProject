@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Tab, Tabs, TextField, Autocomplete, TextareaAutosize } from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Tab, Tabs, TextField, Autocomplete } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid"; 
@@ -8,11 +8,11 @@ import interactionPlugin from "@fullcalendar/interaction";
 import logo from "../assets/images/logoB.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { LocalizationProvider, DatePicker, DateTimePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
-const StaffDashboard = () => {
+const Staff = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
@@ -29,7 +29,6 @@ const StaffDashboard = () => {
   const [selectedType, setSelectedType] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
-  const [additionalText, setAdditionalText] = useState("");
   const [appointmentTypes, setAppointmentTypes] = useState([]);
 
   const fetchAppointments = async (doctorId) => {
@@ -89,13 +88,12 @@ const StaffDashboard = () => {
       await fetchAppointments(doctor.id);
       try {
         const response = await axios.get(`http://localhost:8080/doctors/doctor/${doctor.id}`);
-        const serverData = response.data;
-        const busySlots = serverData.map((appointment) => ({
-            id: appointment.id, 
-            patientId: appointment.patient_id,
-            title: appointment.title, 
-            start: appointment.start, 
-            end: appointment.end,   
+        const busySlots = response.data.map((appointment) => ({
+          id: appointment.id,
+          title: "Busy",
+          start: appointment.start,
+          end: appointment.end,
+          color: "red",
         }));
         setEvents(busySlots);
       } catch (error) {
@@ -107,58 +105,19 @@ const StaffDashboard = () => {
     
   };
 
-  const handleSaveAppointment = async () => {
+  const handleSaveAppointment = () => {
     if (!selectedDoctor || !selectedPatient || !selectedType || !startTime || !endTime) {
       alert("All fields are required!");
       return;
     }
-
     const appointmentData = {
-      doctorId: selectedDoctor.id,
-      patientId: selectedPatient.id,
-      typeId: selectedType.id,
-      startTime: startTime.format("YYYY-MM-DDTHH:mm"),
-      endTime: endTime.format("YYYY-MM-DDTHH:mm"),
-      additionalText: additionalText,
+      doctor: selectedDoctor,
+      patient: selectedPatient,
+      type: selectedType,
+      start_time: startTime,
+      end_time: endTime,
     };
-
-    try {
-      await axios.post("http://localhost:8080/appointments/add", appointmentData);
-      alert(`Appointment successfully scheduled with Dr. ${selectedDoctor.first_name} ${selectedDoctor.last_name} for patient ${selectedPatient.first_name} ${selectedPatient.last_name} at ${startTime.format("HH:mm on DD-MM-YYYY")}.`);
-      setSelectedDoctor(null);
-      setSelectedPatient(null);
-      setSelectedType(null);
-      setStartTime(null);
-      setEndTime(null);
-      setAdditionalText("");
-    } catch (error) {
-      console.error("Error saving appointment:", error);
-      alert("Failed to save appointment.");
-    }
-  };
-
-  const handleUrgentAppointment = async () => {
-    if (!selectedDoctor || !selectedPatient) {
-      alert("Doctor and Patient must be selected for an urgent appointment!");
-      return;
-    }
-
-    const urgentAppointmentData = {
-      doctorId: selectedDoctor.id,
-      patientId: selectedPatient.id,
-      typeId: 1, // Assume 1 is the ID for a default urgent appointment type
-      startTime: dayjs().format("YYYY-MM-DDTHH:mm"),
-      endTime: dayjs().add(30, 'minute').format("YYYY-MM-DDTHH:mm"),
-      additionalText: "Urgent appointment automatically scheduled.",
-    };
-
-    try {
-      await axios.post("http://localhost:8080/appointments/add", urgentAppointmentData);
-      alert(`Urgent appointment successfully scheduled with Dr. ${selectedDoctor.first_name} ${selectedDoctor.last_name} for patient ${selectedPatient.first_name} ${selectedPatient.last_name}.`);
-    } catch (error) {
-      console.error("Error saving urgent appointment:", error);
-      alert("Failed to save urgent appointment.");
-    }
+    console.log("Appointment Data:", appointmentData);
   };
 
   const handleDateSelect = (selectInfo) => {
@@ -299,7 +258,7 @@ const StaffDashboard = () => {
             isOptionEqualToValue={(option, value) => option.id === value?.id}
           />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
+            <DatePicker
               label="Start Time"
               value={startTime}
               onChange={(newValue) => setStartTime(newValue)}
@@ -307,33 +266,19 @@ const StaffDashboard = () => {
             />
           </LocalizationProvider>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
+            <DatePicker
               label="End Time"
               value={endTime}
               onChange={(newValue) => setEndTime(newValue)}
               renderInput={(params) => <TextField {...params} />}
             />
           </LocalizationProvider>
-          <TextField
-            label="Additional Text"
-            multiline
-            rows={4}
-            value={additionalText}
-            onChange={(e) => setAdditionalText(e.target.value)}
-          />
           <Button
             variant="contained"
             color="primary"
             onClick={handleSaveAppointment}
           >
             Save Appointment
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleUrgentAppointment}
-          >
-            Urgent Appointment
           </Button>
         </Box>
       </Box>
@@ -430,4 +375,4 @@ const StaffDashboard = () => {
   );
 };
 
-export default StaffDashboard;
+export default Staff;

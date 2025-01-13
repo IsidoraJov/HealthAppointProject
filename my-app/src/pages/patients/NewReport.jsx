@@ -21,7 +21,11 @@ const NewReport = () => {
   const firstName = searchParams.get("patientName");
   const lastName = searchParams.get("patientLastName");
   const [patientData, setPatientData] = useState({});
-
+  const [doctorData, setDoctorData] = useState({
+    firstName: "",
+    lastName: "",
+    specialization: "",
+  });
   const [diagnosisList, setDiagnosisList] = useState([]);
   const [formData, setFormData] = useState({
     diagnosis_code: [],
@@ -46,9 +50,22 @@ const NewReport = () => {
       console.error("Error fetching patient data:", error);
     }
   };
+  
+  const fetchDoctorData = async () => {
+    const doctorId = localStorage.getItem("userId");
+    if (doctorId) {
+      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
+        .then(response => {
+          setDoctorData(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching doctor data:", error);
+        });
+    }};
 
   useEffect(() => {
     fetchPatientData();
+    fetchDoctorData();
     const fetchDiagnosis = async () => {
       try {
         const response = await axios.get("http://localhost:8080/reports/diagnosis");
@@ -200,8 +217,8 @@ const NewReport = () => {
     }
     doc.setDrawColor("#004D4D");
     doc.line(140, y + 10, 190, y + 10);
-    doc.text("John Doe", 140, y + 15);
-    doc.text("Cardiology", 140, y + 20);
+    doc.text(`Dr. ${doctorData.firstName} ${doctorData.lastName}`, 140, y + 15);
+    doc.text(`${doctorData.specialization}`, 140, y + 20);
 
     doc.output("dataurlnewwindow");
   };
@@ -254,7 +271,7 @@ const NewReport = () => {
         <Typography><strong>Birth Date:</strong> {patientData.dateOfBirth}</Typography>
         <Typography><strong>Email:</strong> {patientData.email}</Typography>
       </Box>
-      
+
         <Autocomplete
           multiple
           options={diagnosisList}

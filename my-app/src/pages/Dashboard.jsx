@@ -21,6 +21,11 @@ const Dashboard = () => {
 
   const [isPatientFormOpen, setIsPatientFormOpen] = React.useState(false);
   const [isAppointmentFormOpen, setIsAppointmentFormOpen] = React.useState(false);
+  const [doctorData, setDoctorData] = useState({
+    firstName: "",
+    lastName: "",
+  });
+  const doctorId = localStorage.getItem("userId");
 
   const handleClosePatientForm = () => {
     setIsPatientFormOpen(false); 
@@ -59,7 +64,7 @@ const Dashboard = () => {
   const [events, setEvents] = useState([]);
   const fetchAppointments = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/appointments");
+      const response = await axios.get(`http://localhost:8080/appointments/${doctorId}`);
       const serverData = response.data;
       const formattedEvents = serverData.map((appointment) => ({
             id: appointment.id, 
@@ -74,8 +79,21 @@ const Dashboard = () => {
         }
     };
 
+    const fetchDoctorData = async () => {
+    
+    if (doctorId) {
+      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
+        .then(response => {
+          setDoctorData(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching doctor data:", error);
+        });
+    }};
+
     useEffect(() => {
         fetchAppointments();
+        fetchDoctorData();
     }, []);
 
   return (
@@ -95,10 +113,10 @@ const Dashboard = () => {
 
           {/* Profil i dugme za navigaciju */}
           <Typography variant="body1" sx={{ marginRight: 2 }}>
-            Dr. John Doe
+            Dr. {doctorData.firstName} {doctorData.lastName}
           </Typography>
           <IconButton color="inherit" onClick={handleMenuOpen}>
-            <Avatar alt="Dr. John Doe">
+          <Avatar alt={`Dr. ${doctorData.firstName} ${doctorData.lastName}`}>
               <AccountCircle />
             </Avatar>
           </IconButton>

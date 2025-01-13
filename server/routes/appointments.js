@@ -2,15 +2,27 @@ var express = require('express');
 var router = express.Router();
 const connection = require('../db');
 
+function validateId(req, res, next) {
+  const id = req.params.id || req.body.id;
+  const maliciousPatterns = /(\bOR\b|\bAND\b|;|--|\/\*|\*\/|\bDROP\b|\bDELETE\b)/i;
 
-router.get('/', function(req, res, next) {
-  
+  if (maliciousPatterns.test(id)) {
+    return res.status(400).json({ error: "Invalid input detected." });
+  }
+  next();
+};
+
+router.get('/:id', validateId, function(req, res, next) {
+
+  const userId = req.params.id;
+
     const query = `
     SELECT appointments.id, appointments.start_time, appointments.end_time, appointments.patient_id, patients.first_name, patients.last_name
     FROM appointments
     JOIN patients ON appointments.patient_id = patients.id
+    WHERE appointments.doctor_id = ?
   `; 
-  connection.query(query, (err, results) => {
+  connection.query(query, [userId], (err, results) => {
     if (err) {
       res.status(500).send('Greška pri dobijanju podataka.');
     } else {
@@ -58,22 +70,38 @@ router.get('/', function(req, res, next) {
     }
   });
 }); */
+function validateInput(req, res, next) {
+  const { patientId, doctorId, typeId, start_time, end_time } = req.body;
+  const maliciousPatterns = /(\bOR\b|\bAND\b|;|--|\/\*|\*\/|\bDROP\b|\bDELETE\b)/i;
 
-router.post("/add", (req, res) => {
-  const { patient, doctor, type, start_time, end_time, additional_text } = req.body;
+  if (
+    maliciousPatterns.test(patientId) ||
+    maliciousPatterns.test(doctorId) ||
+    maliciousPatterns.test(typeId) ||
+    maliciousPatterns.test(start_time) ||
+    maliciousPatterns.test(end_time)
+  ) {
+    return res.status(400).json({ error: "Invalid input detected." });
+  }
+  next();
+}
 
-  if (!patient || !doctor || !type || !start_time || !end_time) {
+
+router.post("/add", validateInput, (req, res) => {
+  const { patientId, doctorId, typeId, start_time, end_time, additional_text } = req.body;
+
+  if (!patientId || !doctorId || !type_id || !start_time || !end_time) {
       return res.status(400).json({ error: "Missing required fields." });
   }
-
+   /*
   const sqlFindIds = `
       SELECT 
           (SELECT id FROM patients WHERE CONCAT(first_name, ' ', last_name) = ?) AS patient_id,
           (SELECT id FROM doctor WHERE CONCAT(first_name, ' ', last_name) = ?) AS doctor_id,
           (SELECT id FROM appointments_type WHERE name = ?) AS type_id
   `;
-
-  connection.query(sqlFindIds, [patient, doctor, type], (err, results) => {
+  */
+ /* connection.query(sqlFindIds, [patient, doctor, type], (err, results) => {
       if (err) {
           console.error("Error finding IDs:", err);
           return res.status(500).json({ error: "Database error." });
@@ -82,7 +110,7 @@ router.post("/add", (req, res) => {
       const { patient_id, doctor_id, type_id } = results[0];
       if (!patient_id || !doctor_id || !type_id) {
           return res.status(404).json({ error: "One or more entities not found." });
-      }
+      }*/
 
       const sqlInsert = `
           INSERT INTO appointments 
@@ -92,7 +120,7 @@ router.post("/add", (req, res) => {
 
       connection.query(
           sqlInsert,
-          [patient_id, doctor_id, type_id, start_time, end_time, additional_text],
+          [patientId, doctorId, typeId, start_time, end_time, additional_text],
           (err, result) => {
               if (err) {
                   console.error("Error adding appointment:", err);
@@ -104,25 +132,24 @@ router.post("/add", (req, res) => {
               });
           }
       );
-  });
+  
 });
 
 
 router.get('/type', function(req, res, next) {
-
+  console.log("Request received for /type");
     connection.query('SELECT * FROM appointments_type', (err, results) => {
         if (err) {
-          res.status(500).send('Greška pri dobijanju podataka.');
+            console.error("Database error:", err);
+            res.status(500).send('Greška pri dobijanju podataka.');
         } else {
-         
-          res.json(results)
-          
+            console.log("Query results:", results);
+            res.json(results);
         }
-      });
-
+    });
 });
 
-router.get('/type/:id', function(req, res, next) {
+router.get('/type/:id',validateId, function(req, res, next) {
   const typeId = req.params.id; 
   
   const query = 'SELECT appointments_type.name FROM appointments LEFT JOIN  appointments_type ON appointments.type_id = appointments_type.id WHERE appointments.id = ?'; 

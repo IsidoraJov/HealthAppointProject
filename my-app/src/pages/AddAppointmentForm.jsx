@@ -46,7 +46,7 @@ const AddAppointmentForm = ({ open, onClose }) => {
 
     const fetchAppointmentTypes = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/appointments/type");
+        const response = await axios.get("http://localhost:8080/users/t");
         setAppointmentTypes(response.data);
       } catch (error) {
         console.error("Error fetching appointment types:", error);
