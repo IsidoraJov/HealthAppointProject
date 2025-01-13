@@ -25,7 +25,7 @@ const bcrypt = require("bcrypt");
 
 const connection = require('./db'); 
 
-//const plainPassword = 'pass13!'; // Primer lozinke
+//const plainPassword = 'pass123'; 
 //const hashedPassword = bcrypt.hashSync(plainPassword, 10); // Generiše bcrypt hash sa 10 salt rounds
 //console.log('Hashed password:', hashedPassword);
 

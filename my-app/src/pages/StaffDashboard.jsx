@@ -236,7 +236,7 @@ const StaffDashboard = () => {
             </Avatar>
           </IconButton>
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
+            <MenuItem onClick={() => navigate("/staff-profile")}>Profile</MenuItem>
             <MenuItem onClick={() => navigate("/login")}>Logout</MenuItem>
           </Menu>
         </Toolbar>

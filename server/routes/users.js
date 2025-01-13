@@ -32,4 +32,29 @@ router.get('/t', function(req, res, next) {
 
 });
 
+router.get('/:id', (req, res) => {
+    const userId = req.params.id;
+
+    const query = 'SELECT * FROM user WHERE id = ?';
+    connection.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Greška pri izvršavanju upita:', err);
+            return res.status(500).json({ error: 'Greška na serveru' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'User nije pronađen' });
+        }
+
+        const patient = results[0];
+
+        const response = {
+            firstName: patient.first_name,
+            lastName: patient.last_name,
+            email: patient.email,
+
+        };
+      
+        res.json(response); 
+    });
+});
 module.exports = router;

@@ -6,7 +6,7 @@ describe("SQL Injection Tests for Appointments API", () => {
     const maliciousId = "1 OR 1=1";
     const response = await request(app).get(`/appointments/${maliciousId}`);
 
-    expect(response.status).toBe(400); // Sada očekujemo 400 zbog validacije
+    expect(response.status).toBe(400); 
     expect(response.body.error).toBe("Invalid input detected.");
   });
 
@@ -24,7 +24,7 @@ describe("SQL Injection Tests for Appointments API", () => {
       .post("/appointments/add")
       .send(maliciousPayload);
 
-    expect(response.status).toBe(400); // Sada očekujemo 400 zbog validacije
+    expect(response.status).toBe(400);
     expect(response.body.error).toBe("Invalid input detected.");
   });
 
@@ -32,7 +32,7 @@ describe("SQL Injection Tests for Appointments API", () => {
     const maliciousTypeId = "1; DROP TABLE appointments_type;";
     const response = await request(app).get(`/appointments/type/${maliciousTypeId}`);
 
-    expect(response.status).toBe(400); // Sada očekujemo 400 zbog validacije
+    expect(response.status).toBe(400); 
     expect(response.body.error).toBe("Invalid input detected.");
   });
 });
