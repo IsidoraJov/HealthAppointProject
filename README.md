@@ -134,11 +134,12 @@ HealthAppoint is a comprehensive patient management system designed for healthca
 
 1. **Database Configuration**:
    - Install MySQL and create a database named `healthappoint`.
+   - Download the database schema: [healthappoint.sql](server/database/healthappoint.sql)
    - Import the provided database schema and data:
      ```bash
      mysql -u [username] -p healthappoint < /path/to/healthappoint.sql
      ```
-   - Download the database schema: [healthappoint.sql](server/database/healthappoint.sql)
+   
    - Update the database connection details in `server/src/db.js`:
      ```javascript
      const connection = mysql.createConnection({
