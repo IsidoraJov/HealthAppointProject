@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate,useLocation  } from "react-router-dom";
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/Dashboard";
 import DoctorProfile from "./pages/DoctorProfile";
@@ -12,9 +12,12 @@ import PatientProfileStaff from "./pages/patients/PatientProfileStaff";
 
 const ProtectedRoute = ({ children, allowedUserIds }) => {
   const userId = localStorage.getItem("role_id");
+  const location = useLocation();
+
 
   if (!userId || !allowedUserIds.includes(parseInt(userId, 10))) {
-    return <Navigate to="/login" replace />;
+    console.warn("Access denied for userId:", userId);
+    return <Navigate to={location.pathname} replace />;
     
   }
   

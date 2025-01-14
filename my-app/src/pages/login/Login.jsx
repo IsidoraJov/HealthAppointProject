@@ -50,7 +50,7 @@ const Login = () => {
       localStorage.setItem('userId', data.id);
 
       if (data.role_id === "1") {
-        console.log("stigo");
+       
         navigate("/dashboard",  { replace: true });
       } else if (data.role_id === "2") {
         navigate("/staffDashboard");
