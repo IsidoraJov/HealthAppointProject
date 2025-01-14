@@ -138,6 +138,7 @@ HealthAppoint is a comprehensive patient management system designed for healthca
      ```bash
      mysql -u [username] -p healthappoint < /path/to/healthappoint.sql
      ```
+   - Download the database schema: [healthappoint.sql](server/database/healthappoint.sql)
    - Update the database connection details in `server/src/db.js`:
      ```javascript
      const connection = mysql.createConnection({
@@ -148,7 +149,6 @@ HealthAppoint is a comprehensive patient management system designed for healthca
      });
      module.exports = connection;
      ```
-
 2. **Environment Variables**:
    - Create a `.env` file in the `server` directory with the following variables:
      ```env
