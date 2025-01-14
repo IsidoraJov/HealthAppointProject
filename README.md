@@ -7,7 +7,7 @@ HealthAppoint is a comprehensive patient management system designed for healthca
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
 - [Setup](#setup)
-- [Usage](#usage)
+- [Data Model](#data-model)
 
 ## Features
 
@@ -161,16 +161,9 @@ HealthAppoint is a comprehensive patient management system designed for healthca
      cd my-app
      npm start
      ```
-## Usage
+## Data Model
 
-1. Open your browser and navigate to `http://localhost:3000` to access the frontend.
-2. Use the system to perform the following tasks:
-   - **Patient Profiles**: Create and manage patient profiles, including medical history and treatment records.
-   - **Appointment Scheduling**: Schedule appointments using the interactive calendar interface.
-   - **Medical Reports**: Generate, edit, and download signed PDF medical reports.
-   - **Notifications**: Send appointment reminders to patients via email or SMS.
-   - **Doctor Availability**: View and customize doctor schedules and availability.
-3. Confirm and track appointments as patients confirm their availability via email or SMS.
+![image](https://github.com/user-attachments/assets/e1953a68-b668-46e4-97a1-371eb4d9fff7)
 
 
 
