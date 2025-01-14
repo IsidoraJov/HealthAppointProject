@@ -100,22 +100,16 @@ HealthAppoint is a comprehensive patient management system designed for healthca
 
 - **Frontend**: React.js with Material-UI for building the user interface
 - **Backend**: Node.js with Express.js for API and server-side logic
-- **Database**: PostgreSQL for storing patient, appointment, and report data
+- **Database**: MySQL for storing patient, appointment, and report data
 - **State Management**: React Context API
 - **HTTP Requests**: Axios
 - **Calendars**: FullCalendar library for scheduling and managing appointments
 - **Authentication**: JSON Web Tokens (JWT) for secure user authentication
 - **Notifications**: Email and SMS notifications using SendGrid or Twilio
-- **PDF Generation**: PDFKit for generating medical reports as PDFs
+- **PDF Generation**: jsPDF for generating medical reports as PDFs
 
 ---
 
-## Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/IsidoraJov/HealthAppointProject.git
-   cd HealthAppoint
 
 ## Installation
 
@@ -123,23 +117,37 @@ HealthAppoint is a comprehensive patient management system designed for healthca
    ```bash
    git clone https://github.com/IsidoraJov/HealthAppointProject.git
    cd HealthAppoint
-   
+   ```
+
 2. Install dependencies for both server and client:
-    ```bash
-    # Install backend dependencies
-    cd server
-    npm install
+   ```bash
+   # Install backend dependencies
+   cd server
+   npm install
 
-    
-    # Install frontend dependencies
-    cd ../my-app
-    npm install
+   # Install frontend dependencies
+   cd ../my-app
+   npm install
+   ```
 
 ## Setup
 
 1. **Database Configuration**:
-   - Install PostgreSQL and create a database named `healthappoint`.
-   - Update the database connection string in `server/src/db.js`.
+   - Install MySQL and create a database named `healthappoint`.
+   - Import the provided database schema and data:
+     ```bash
+     mysql -u [username] -p healthappoint < /path/to/healthappoint.sql
+     ```
+   - Update the database connection details in `server/src/db.js`:
+     ```javascript
+     const connection = mysql.createConnection({
+       host: 'localhost',
+       user: 'your_mysql_user',
+       password: 'your_mysql_password',
+       database: 'healthappoint',
+     });
+     module.exports = connection;
+     ```
 
 2. **Environment Variables**:
    - Create a `.env` file in the `server` directory with the following variables:
@@ -162,6 +170,14 @@ HealthAppoint is a comprehensive patient management system designed for healthca
      cd my-app
      npm start
      ```
+
+4. **Access the Application:**
+   
+   Open your browser and navigate to http://localhost:3000 for the frontend.
+   
+   The backend server will run on http://localhost:8080.
+
+
 ## Data Model
 
 ![image](https://github.com/user-attachments/assets/e1953a68-b668-46e4-97a1-371eb4d9fff7)
