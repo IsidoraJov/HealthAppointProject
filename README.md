@@ -8,6 +8,7 @@ HealthAppoint is a comprehensive patient management system designed for healthca
 - [Installation](#installation)
 - [Setup](#setup)
 - [Data Model](#data-model)
+- [Use-Case Model](#use-case-model)
 
 ## Features
 
@@ -166,4 +167,7 @@ HealthAppoint is a comprehensive patient management system designed for healthca
 ![image](https://github.com/user-attachments/assets/e1953a68-b668-46e4-97a1-371eb4d9fff7)
 
 
+## Use-Case Model
+
+![image](https://github.com/user-attachments/assets/0bb7eb78-37e4-4a15-a451-1a436ad3cc5b)
 
