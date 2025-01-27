@@ -146,7 +146,7 @@ const StaffDashboard = () => {
     const urgentAppointmentData = {
       doctorId: selectedDoctor.id,
       patientId: selectedPatient.id,
-      typeId: 1, // Assume 1 is the ID for a default urgent appointment type
+      typeId: 1, 
       startTime: dayjs().format("YYYY-MM-DDTHH:mm"),
       endTime: dayjs().add(30, 'minute').format("YYYY-MM-DDTHH:mm"),
       additionalText: "Urgent appointment automatically scheduled.",
@@ -207,6 +207,8 @@ const StaffDashboard = () => {
         emergencyContact: "",
         language: "",
       });
+      fetchPatients();
+     // window.location.reload();
     } catch (error) {
       console.error("Error adding patient:", error);
       alert("An error occurred while adding the patient.");
@@ -286,7 +288,7 @@ const StaffDashboard = () => {
           />
           <Autocomplete
             options={patients}
-            getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
+            getOptionLabel={(option) => `${option.first_name} ${option.last_name} -  ${option.jmbg}`}
             renderInput={(params) => <TextField {...params} label="Patient" />}
             onChange={(event, value) => setSelectedPatient(value)}
             isOptionEqualToValue={(option, value) => option.id === value?.id}

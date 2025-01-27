@@ -90,27 +90,10 @@ function validateInput(req, res, next) {
 router.post("/add", validateInput, (req, res) => {
   const { patientId, doctorId, typeId, start_time, end_time, additional_text } = req.body;
 
-  if (!patientId || !doctorId || !type_id || !start_time || !end_time) {
+  if (!patientId || !doctorId || !typeId || !start_time || !end_time) {
       return res.status(400).json({ error: "Missing required fields." });
   }
-   /*
-  const sqlFindIds = `
-      SELECT 
-          (SELECT id FROM patients WHERE CONCAT(first_name, ' ', last_name) = ?) AS patient_id,
-          (SELECT id FROM doctor WHERE CONCAT(first_name, ' ', last_name) = ?) AS doctor_id,
-          (SELECT id FROM appointments_type WHERE name = ?) AS type_id
-  `;
-  */
- /* connection.query(sqlFindIds, [patient, doctor, type], (err, results) => {
-      if (err) {
-          console.error("Error finding IDs:", err);
-          return res.status(500).json({ error: "Database error." });
-      }
-
-      const { patient_id, doctor_id, type_id } = results[0];
-      if (!patient_id || !doctor_id || !type_id) {
-          return res.status(404).json({ error: "One or more entities not found." });
-      }*/
+  
 
       const sqlInsert = `
           INSERT INTO appointments 
@@ -134,6 +117,72 @@ router.post("/add", validateInput, (req, res) => {
       );
   
 });
+
+router.post("/check-add", validateInput, (req, res) => {
+  const { patientId, doctorId, typeId, start_time, end_time, additional_text } = req.body;
+
+  if (!patientId || !doctorId || !typeId || !start_time || !end_time) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+
+  const sqlCheckAvailability = `
+    SELECT *
+    FROM appointments
+    WHERE doctor_id = ?
+      AND (
+        (start_time BETWEEN ? AND ?) OR
+        (end_time BETWEEN ? AND ?) OR
+        (start_time <= ? AND end_time >= ?)
+      )
+  `;
+
+  const availabilityValues = [
+    doctorId,
+    start_time,
+    end_time,
+    start_time,
+    end_time,
+    start_time,
+    end_time,
+  ];
+
+  connection.query(sqlCheckAvailability, availabilityValues, (err, results) => {
+    if (err) {
+      console.error("Error checking doctor availability:", err);
+      return res.status(500).json({ error: "Internal server error." });
+    }
+
+    if (results.length > 0) {
+      // Doktor nije slobodan
+      return res.status(409).json({ error: "Doctor is not available in the given time slot." });
+    }
+
+    // Doktor je slobodan
+    const sqlInsert = `
+      INSERT INTO appointments 
+      (patient_id, doctor_id, type_id, start_time, end_time, status, reminder_sent, confirmation_sent, additional_text)
+      VALUES (?, ?, ?, ?, ?, 'scheduled', 0, 0, ?)
+    `;
+
+    connection.query(
+      sqlInsert,
+      [patientId, doctorId, typeId, start_time, end_time, additional_text],
+      (err, result) => {
+        if (err) {
+          console.error("Error adding appointment:", err);
+          return res.status(500).json({ error: "Database error." });
+        }
+
+        res.status(201).json({
+          message: "Appointment added successfully!",
+          appointment_id: result.insertId,
+        });
+      }
+    );
+  });
+});
+
 
 
 router.get('/type', function(req, res, next) {

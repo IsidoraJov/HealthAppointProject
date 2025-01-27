@@ -29,7 +29,7 @@ const Login = () => {
         password: CryptoJS.AES.encrypt(formData.password, "tajni_kljuc").toString(),
       };
       
-      // Slanje zahteva na backend
+      
       const response = await fetch("http://localhost:8080/login", {
         method: "POST",
         headers: {
