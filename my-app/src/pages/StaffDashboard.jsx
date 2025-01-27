@@ -21,6 +21,10 @@ const StaffDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [tabValue, setTabValue] = useState(0); // (0 - mesecni, 1 - dnevni)
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredPatients, setFilteredPatients] = useState([]);
+
+
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
 
@@ -82,6 +86,21 @@ const StaffDashboard = () => {
     fetchPatients();
     fetchAppointmentTypes();
   }, []);
+
+  const handleSearch = () => {
+    const filtered = patients.filter((patient) => {
+      const fullName = `${patient.first_name} ${patient.last_name}`.toLowerCase();
+      return (
+        patient.jmbg.includes(searchTerm) ||
+        fullName.includes(searchTerm.toLowerCase())
+      );
+    });
+    setFilteredPatients(filtered);
+  };
+
+  const handleNavigateToPatient = (patientId) => {
+    navigate(`/staff-patient-profile?id=${patientId}`);
+  };
 
   const handleDoctorChange = async (doctor) => {
     setSelectedDoctor(doctor);
@@ -248,19 +267,43 @@ const StaffDashboard = () => {
     <Box sx={{ backgroundColor: "#004D4D", padding: 2, display: "flex", gap: 2, marginX: 2, borderRadius: 2 }}>
         <TextField
           variant="outlined"
-          placeholder="Search Patiente"
+          placeholder="Search Patiente by JMBG or Name"
           size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ backgroundColor: "white", borderRadius: 1, flexGrow: 1 }}
         />
         <Button
           variant="contained"
           color="primary"
-          onClick={() => console.log("Search Doctor")}
+          onClick={handleSearch}
           sx={{ backgroundColor: "#FF7043" }}
         >
           Search
         </Button>
       </Box>
+ {/* Search Results */}
+ {filteredPatients.length > 0 && (
+        <Box sx={{ backgroundColor: "white", padding: 2, marginY: 2, borderRadius: 2, marginX: 2 }}>
+          <Typography variant="h6">Search Results:</Typography>
+          {filteredPatients.map((patient) => (
+            <Box
+              key={patient.id}
+              sx={{ display: "flex", justifyContent: "space-between", padding: 1, borderBottom: "1px solid #ccc" }}
+            >
+              <Typography>{`${patient.first_name} ${patient.last_name} - ${patient.jmbg}`}</Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleNavigateToPatient(patient.id)}
+              >
+                View Profile
+              </Button>
+            </Box>
+          ))}
+        </Box>
+      )}
+
 
       {/* Add Appointment Section */}
       <Box sx={{ backgroundColor: "white", padding: 4, marginY: 2, borderRadius: 2, boxShadow: 3, marginX: 2 }}>

@@ -5,20 +5,13 @@ import axios from "axios";
 
 const PatientProfileStaff = () => {
   const [searchParams] = useSearchParams();
-  const firstName = searchParams.get("firstName");
-  const lastName = searchParams.get("lastName");
+  const patientId = searchParams.get("id");
   const [patientData, setPatientData] = useState({});
   const [reports, setReports] = useState([]);
 
   const fetchPatientData = async () => {
     try {
-      const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
-        params: { firstName, lastName },
-      });
-      const patientId = patientIdResponse.data.patientId;
-
       const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
-
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
       console.error("Error fetching patient data:", error);
@@ -28,9 +21,8 @@ const PatientProfileStaff = () => {
   const fetchReports = async () => {
     try {
       const response = await axios.get("http://localhost:8080/reports/perPatient", {
-        params: { firstName, lastName },
+        params: { id: patientId },
       });
-
       setReports(response.data);
     } catch (error) {
       console.error("Error fetching reports:", error);
@@ -38,9 +30,11 @@ const PatientProfileStaff = () => {
   };
 
   useEffect(() => {
-    fetchPatientData();
-    fetchReports();
-  }, []);
+    if (patientId) {
+      fetchPatientData();
+      fetchReports();
+    }
+  }, [patientId]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#006A6A" }}>
