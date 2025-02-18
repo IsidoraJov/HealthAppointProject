@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Tab, Tabs, TextField, Autocomplete, TextareaAutosize } from "@mui/material";
-import { AccountCircle } from "@mui/icons-material";
+import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Stack , Tab, Tabs, TextField, Autocomplete, TextareaAutosize, Badge, Popover, List, ListItem, ListItemText,Card, Divider } from "@mui/material";
+import { AccountCircle,Notifications } from "@mui/icons-material";
+import CloseIcon from '@mui/icons-material/Close';
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid"; 
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -12,6 +13,7 @@ import { LocalizationProvider, DatePicker, DateTimePicker } from "@mui/x-date-pi
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
+
 const StaffDashboard = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -19,11 +21,13 @@ const StaffDashboard = () => {
 
   const [doctors, setDoctors] = useState([]);
   const [patients, setPatients] = useState([]);
-  const [tabValue, setTabValue] = useState(0); // (0 - mesecni, 1 - dnevni)
+  const [activeTab, setActiveTab] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPatients, setFilteredPatients] = useState([]);
 
+  const [notifications, setNotifications] = useState([]);
+  const [notifAnchor, setNotifAnchor] = useState(null);
 
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -35,6 +39,15 @@ const StaffDashboard = () => {
   const [endTime, setEndTime] = useState(null);
   const [additionalText, setAdditionalText] = useState("");
   const [appointmentTypes, setAppointmentTypes] = useState([]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/verify/notVerified");
+      setNotifications(response.data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
 
   const fetchAppointments = async (doctorId) => {
     if (!doctorId) return;
@@ -85,7 +98,36 @@ const StaffDashboard = () => {
     fetchDoctors();
     fetchPatients();
     fetchAppointmentTypes();
+    fetchNotifications();
   }, []);
+
+  const handleNotifOpen = (event) => {
+    setNotifAnchor(event.currentTarget);
+  };
+
+  const handleNotifClose = () => {
+    setNotifAnchor(null);
+  };
+
+  const handleDismissNotification = (index) => {
+    setNotifications((prevNotifications) => prevNotifications.filter((_, i) => i !== index));
+  };
+
+  const handleConfirmNotification = async (id, index) => {
+    try {
+      const response = await fetch(`http://localhost:8080/verify/confirm/${id}`, {
+        method: "POST",
+      });
+  
+      if (response.ok) {
+        handleDismissNotification(index);
+      } else {
+        console.error("Failed to confirm appointment");
+      }
+    } catch (error) {
+      console.error("Error confirming appointment:", error);
+    }
+  };
 
   const handleSearch = () => {
     const filtered = patients.filter((patient) => {
@@ -102,6 +144,10 @@ const StaffDashboard = () => {
     navigate(`/staff-patient-profile?id=${patientId}`);
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+  
   const handleDoctorChange = async (doctor) => {
     setSelectedDoctor(doctor);
     if (doctor) {
@@ -133,15 +179,16 @@ const StaffDashboard = () => {
     }
 
     const appointmentData = {
-      doctorId: selectedDoctor.id,
       patientId: selectedPatient.id,
+      doctorId: selectedDoctor.id,
       typeId: selectedType.id,
-      startTime: startTime.format("YYYY-MM-DDTHH:mm"),
-      endTime: endTime.format("YYYY-MM-DDTHH:mm"),
-      additionalText: additionalText,
+      start_time: startTime.format("YYYY-MM-DDTHH:mm"),
+      end_time: endTime.format("YYYY-MM-DDTHH:mm"),
+      additional_text: additionalText,
     };
 
     try {
+      console.log("Data sent to server:", appointmentData);
       await axios.post("http://localhost:8080/appointments/add", appointmentData);
       alert(`Appointment successfully scheduled with Dr. ${selectedDoctor.first_name} ${selectedDoctor.last_name} for patient ${selectedPatient.first_name} ${selectedPatient.last_name} at ${startTime.format("HH:mm on DD-MM-YYYY")}.`);
       setSelectedDoctor(null);
@@ -248,11 +295,90 @@ const StaffDashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             HealthAppoint Dashboard
           </Typography>
+          <IconButton color="inherit" onClick={handleNotifOpen}>
+  <Badge badgeContent={notifications.length} color="error">
+    <Notifications />
+  </Badge>
+</IconButton>
+<Popover
+  open={Boolean(notifAnchor)}
+  anchorEl={notifAnchor}
+  onClose={handleNotifClose}
+  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+>
+  <List sx={{ width: 380, maxHeight: 400, overflowY: "auto" }}> 
+    {notifications.length > 0 ? (
+      notifications.map((notif, index) => (
+        <ListItem
+  key={index}
+  divider
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 1,
+    padding: 2,
+    backgroundColor: "#F9F9F9",
+    borderRadius: "8px",
+    margin: "8px",
+    position: "relative",
+  }}
+>
+  <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+    <ListItemText
+      primary={
+        <Typography variant="body1" fontWeight="bold">
+          {notif.patient_first_name} {notif.patient_last_name} ({notif.patient_phone})
+        </Typography>
+      }
+      secondary={
+        <>
+          <Typography variant="body2" color="textSecondary">
+            <strong>Time:</strong> {new Date(notif.start_time).toLocaleString()}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            <strong>Doctor:</strong> Dr. {notif.doctor_first_name} {notif.doctor_last_name}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            <strong>Type:</strong> {notif.appointment_type}
+          </Typography>
+        </>
+      }
+    />
+    
+    <IconButton edge="end" onClick={() => handleDismissNotification(index)} sx={{ alignSelf: "flex-start" }}>
+      <CloseIcon />
+    </IconButton>
+  </Box>
+
+  <Box sx={{ display: "flex", justifyContent: "flex-start", width: "100%", marginTop: 1 }}>
+    <Button
+      variant="contained"
+      color="success"
+      size="small"
+      sx={{ textTransform: "none", fontSize: "0.8rem", padding: "4px 10px" }}
+      onClick={() => handleConfirmNotification(notif.appointment_id,index)}
+    >
+      Confirm
+    </Button>
+  </Box>
+</ListItem>
+
+      ))
+    ) : (
+      <ListItem>
+        <ListItemText primary="No pending verifications" />
+      </ListItem>
+    )}
+  </List>
+</Popover>
+
+
           <Typography variant="body1" sx={{ marginRight: 2 }}>
-            Dr. John Doe
+           John Doe
           </Typography>
           <IconButton color="inherit" onClick={handleMenuOpen}>
-            <Avatar alt="Dr. John Doe">
+            <Avatar alt="John Doe">
               <AccountCircle />
             </Avatar>
           </IconButton>
@@ -306,164 +432,98 @@ const StaffDashboard = () => {
 
 
       {/* Add Appointment Section */}
-      <Box sx={{ backgroundColor: "white", padding: 4, marginY: 2, borderRadius: 2, boxShadow: 3, marginX: 2 }}>
-        <Typography variant="h6" gutterBottom>Add Appointment</Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Autocomplete
-            options={doctors}
-            getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
-            renderInput={(params) => <TextField {...params} label="Doctor" />}
-            onChange={(event, value) => handleDoctorChange(value)}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-          />
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
-            slotMinTime="08:00:00"
-            slotMaxTime="20:00:00"
-            events={events}
-            editable={false}
-            selectable={true}
-            selectMirror={true}
-            select={handleDateSelect}
-            height="auto"
-            slotDuration="00:30:00"
-          />
-          <Autocomplete
-            options={patients}
-            getOptionLabel={(option) => `${option.first_name} ${option.last_name} -  ${option.jmbg}`}
-            renderInput={(params) => <TextField {...params} label="Patient" />}
-            onChange={(event, value) => setSelectedPatient(value)}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-          />
-          <Autocomplete
-            options={appointmentTypes}
-            getOptionLabel={(option) => option.name}
-            renderInput={(params) => <TextField {...params} label="Appointment Type" />}
-            onChange={(event, value) => setSelectedType(value)}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-          />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="Start Time"
-              value={startTime}
-              onChange={(newValue) => setStartTime(newValue)}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          </LocalizationProvider>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="End Time"
-              value={endTime}
-              onChange={(newValue) => setEndTime(newValue)}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          </LocalizationProvider>
-          <TextField
-            label="Additional Text"
-            multiline
-            rows={4}
-            value={additionalText}
-            onChange={(e) => setAdditionalText(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSaveAppointment}
-          >
-            Save Appointment
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleUrgentAppointment}
-          >
-            Urgent Appointment
-          </Button>
-        </Box>
-      </Box>
+      <Box sx={{ backgroundColor: "white", padding: 4, borderRadius: 2, boxShadow: 3, marginX: 2 }}>
+  <Tabs value={activeTab} onChange={handleTabChange} centered>
+    <Tab label="Add Appointment" />
+    <Tab label="Add Patient" />
+  </Tabs>
 
-      {/* Add Patient Section */}
-      <Box sx={{ backgroundColor: "white", padding: 4, marginY: 2, borderRadius: 2, boxShadow: 3, marginX: 2 }}>
-        <Typography variant="h6" gutterBottom>Add Patient</Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="First Name"
-            variant="outlined"
-            value={patientData.firstName}
-            onChange={(e) => handleInputChange("firstName", e.target.value)}
-          />
-          <TextField
-            label="Last Name"
-            variant="outlined"
-            value={patientData.lastName}
-            onChange={(e) => handleInputChange("lastName", e.target.value)}
-          />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Birthday"
-              value={patientData.birthday}
-              onChange={(newValue) => handleInputChange("birthday", newValue)}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          </LocalizationProvider>
-          <TextField
-            label="JMBG"
-            variant="outlined"
-            value={patientData.jmbg}
-            onChange={(e) => handleInputChange("jmbg", e.target.value)}
-          />
-          <TextField
-            label="Phone"
-            variant="outlined"
-            value={patientData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
-          />
-          <TextField
-            label="Email"
-            variant="outlined"
-            value={patientData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-          />
-          <TextField
-            label="Address"
-            variant="outlined"
-            value={patientData.address}
-            onChange={(e) => handleInputChange("address", e.target.value)}
-          />
-          <Autocomplete
-            options={["Male", "Female"]}
-            renderInput={(params) => <TextField {...params} label="Gender" />}
-            value={patientData.gender}
-            onChange={(event, value) => handleInputChange("gender", value)}
-          />
-          <TextField
-            label="Marital Status"
-            variant="outlined"
-            value={patientData.maritalStatus}
-            onChange={(e) => handleInputChange("maritalStatus", e.target.value)}
-          />
-          <TextField
-            label="Emergency Contact"
-            variant="outlined"
-            value={patientData.emergencyContact}
-            onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
-          />
-          <TextField
-            label="Language"
-            variant="outlined"
-            value={patientData.language}
-            onChange={(e) => handleInputChange("language", e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSavePatient}
-          >
-            Add Patient
-          </Button>
-        </Box>
-      </Box>
+  {activeTab === 0 && (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
+      <Typography variant="h6" gutterBottom>Add Appointment</Typography>
+      <Autocomplete
+        options={doctors}
+        getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
+        renderInput={(params) => <TextField {...params} label="Doctor" />}
+        onChange={(event, value) => handleDoctorChange(value)}
+        isOptionEqualToValue={(option, value) => option.id === value?.id}
+      />
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="timeGridWeek"
+        slotMinTime="08:00:00"
+        slotMaxTime="20:00:00"
+        events={events}
+        editable={false}
+        selectable={true}
+        selectMirror={true}
+        select={handleDateSelect}
+        height="auto"
+        slotDuration="00:30:00"
+      />
+      <Autocomplete
+        options={patients}
+        getOptionLabel={(option) => `${option.first_name} ${option.last_name} -  ${option.jmbg}`}
+        renderInput={(params) => <TextField {...params} label="Patient" />}
+        onChange={(event, value) => setSelectedPatient(value)}
+        isOptionEqualToValue={(option, value) => option.id === value?.id}
+      />
+      <Autocomplete
+        options={appointmentTypes}
+        getOptionLabel={(option) => option.name}
+        renderInput={(params) => <TextField {...params} label="Appointment Type" />}
+        onChange={(event, value) => setSelectedType(value)}
+        isOptionEqualToValue={(option, value) => option.id === value?.id}
+      />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateTimePicker
+          label="Start Time"
+          value={startTime}
+          onChange={(newValue) => setStartTime(newValue)}
+          renderInput={(params) => <TextField {...params} />}
+        />
+      </LocalizationProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateTimePicker
+          label="End Time"
+          value={endTime}
+          onChange={(newValue) => setEndTime(newValue)}
+          renderInput={(params) => <TextField {...params} />}
+        />
+      </LocalizationProvider>
+      <TextField
+        label="Additional Text"
+        multiline
+        rows={4}
+        value={additionalText}
+        onChange={(e) => setAdditionalText(e.target.value)}
+      />
+      <Button variant="contained" color="primary" onClick={handleSaveAppointment}>Save Appointment</Button>
+      <Button variant="contained" color="error" onClick={handleUrgentAppointment}>Urgent Appointment</Button>
+    </Box>
+  )}
+
+  {activeTab === 1 && (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
+      <Typography variant="h6" gutterBottom>Add Patient</Typography>
+      <TextField label="First Name" variant="outlined" value={patientData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} />
+      <TextField label="Last Name" variant="outlined" value={patientData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker label="Birthday" value={patientData.birthday} onChange={(newValue) => handleInputChange("birthday", newValue)} renderInput={(params) => <TextField {...params} />} />
+      </LocalizationProvider>
+      <TextField label="JMBG" variant="outlined" value={patientData.jmbg} onChange={(e) => handleInputChange("jmbg", e.target.value)} />
+      <TextField label="Phone" variant="outlined" value={patientData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} />
+      <TextField label="Email" variant="outlined" value={patientData.email} onChange={(e) => handleInputChange("email", e.target.value)} />
+      <TextField label="Address" variant="outlined" value={patientData.address} onChange={(e) => handleInputChange("address", e.target.value)} />
+      <Autocomplete options={["Male", "Female"]} renderInput={(params) => <TextField {...params} label="Gender" />} value={patientData.gender} onChange={(event, value) => handleInputChange("gender", value)} />
+      <TextField label="Marital Status" variant="outlined" value={patientData.maritalStatus} onChange={(e) => handleInputChange("maritalStatus", e.target.value)} />
+      <TextField label="Emergency Contact" variant="outlined" value={patientData.emergencyContact} onChange={(e) => handleInputChange("emergencyContact", e.target.value)} />
+      <TextField label="Language" variant="outlined" value={patientData.language} onChange={(e) => handleInputChange("language", e.target.value)} />
+      <Button variant="contained" color="primary" onClick={handleSavePatient}>Add Patient</Button>
+    </Box>
+  )}
+</Box>
+
 
       {/* Footer */}
       <Box component="footer" sx={{ backgroundColor: "#004D4D", padding: 2, marginTop: "auto" }}>

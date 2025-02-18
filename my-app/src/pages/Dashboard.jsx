@@ -113,7 +113,7 @@ const Dashboard = () => {
 
           {/* Profil i dugme za navigaciju */}
           <Typography variant="body1" sx={{ marginRight: 2 }}>
-            Dr. {doctorData.firstName} {doctorData.lastName}
+            Dr {doctorData.firstName} {doctorData.lastName}
           </Typography>
           <IconButton color="inherit" onClick={handleMenuOpen}>
           <Avatar alt={`Dr. ${doctorData.firstName} ${doctorData.lastName}`}>

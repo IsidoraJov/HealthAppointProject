@@ -26,7 +26,6 @@ const PatientProfile = () => {
  
   const fetchPatientData = async () => {
     try {
-      console.log('fetch patient data')
       const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
         params: { firstName, lastName },
       });
@@ -44,7 +43,6 @@ const PatientProfile = () => {
 
   const fetchReports = async () => {
     try {
-      console.log('fetch reports')
       const response = await axios.get("http://localhost:8080/reports/perPatient", {
         params: { firstName, lastName },
       });
