@@ -3,6 +3,10 @@ const app = require("../app");
 const connection = require("../db"); 
 
 jest.mock("../db"); 
+jest.mock("../db", () => ({
+  query: jest.fn(),
+  end: jest.fn(), 
+}));
 
 describe("POST /appointments/check-add", () => {
   afterEach(() => {
@@ -10,7 +14,7 @@ describe("POST /appointments/check-add", () => {
   });
 
   afterAll(() => {
-    connection.end();
+    
   });
 
   it("should add an appointment successfully", async () => {
