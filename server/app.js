@@ -15,6 +15,7 @@ var doctorsRouter = require('./routes/doctors');
 var appointmentsRouter = require('./routes/appointments');
 var patientsRouter = require('./routes/patients');
 var reportsRouter = require('./routes/reports');
+var { router: verify, scheduleEmail }  = require('./routes/verify');
 
 var app = express();
 
@@ -48,6 +49,8 @@ app.use('/reports', reportsRouter);
 app.use('/doctors', doctorsRouter);
 app.use('/appointments', appointmentsRouter);
 app.use('/patients', patientsRouter);
+app.use('/verify', verify);
+
 app.use(cookieParser());
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -71,6 +74,36 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+function scheduleEmailsForUnverifiedAppointments() {
+  connection.query(
+    `
+      SELECT a.id, a.start_time, a.confirmation_sent, 
+             p.id AS patient_id, p.first_name, p.last_name, p.email 
+      FROM appointments a 
+      JOIN patients p ON a.patient_id = p.id
+      WHERE a.confirmation_sent = 0 
+        AND a.start_time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 24 HOUR)
+    `,
+    function (error, results) {
+      if (error) {
+        console.error("Greška pri preuzimanju termina:", error);
+        return;
+      }
+
+      results.forEach((appointment) => {
+        const patient = {
+          id: appointment.patient_id,
+          first_name: appointment.first_name,
+          last_name: appointment.last_name,
+          email: appointment.email
+        };
+
+        scheduleEmail(patient, appointment);
+      });
+    }
+  );
+}
+
 
 // Ruta za zaštićene podatke
 app.get("/protected", (req, res) => {
@@ -87,6 +120,7 @@ app.get("/protected", (req, res) => {
 if (require.main === module) {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+  scheduleEmailsForUnverifiedAppointments();
 });
 }
 
@@ -94,5 +128,6 @@ app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.url}`);
   next();
 });
+
 
 module.exports = app;

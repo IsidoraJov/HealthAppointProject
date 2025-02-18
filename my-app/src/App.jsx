@@ -9,6 +9,7 @@ import NewReport from "./pages/patients/NewReport";
 import StaffDashboard from "./pages/StaffDashboard";
 import StaffProfile from "./pages/StaffProfile";
 import PatientProfileStaff from "./pages/patients/PatientProfileStaff";
+import VerifyAppointment from "./pages/VerifyAppointment";
 
 const ProtectedRoute = ({ children, allowedUserIds }) => {
   const userId = localStorage.getItem("role_id");
@@ -31,6 +32,13 @@ const App = () => (
         path="/login"
         element={
           <Login />
+        }
+      />
+
+      <Route
+        path="/verify"
+        element={
+          <VerifyAppointment />
         }
       />
 
