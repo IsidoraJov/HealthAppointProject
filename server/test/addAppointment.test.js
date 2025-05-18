@@ -8,13 +8,29 @@ jest.mock("../db", () => ({
   end: jest.fn(), 
 }));
 
+beforeAll(() => {
+  consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  console.error.mockRestore();
+});
+
 describe("POST /appointments/check-add", () => {
   afterEach(() => {
     jest.clearAllMocks(); 
   });
 
-  afterAll(() => {
-    
+
+  
+
+
+  connection.query.mockImplementation((sql, params, callback) => {
+    if (sql.includes("SELECT")) {
+      callback(new Error("Database error"), null);
+    } else if (sql.includes("INSERT")) {
+      callback(null, { insertId: 42 });
+    }
   });
 
   it("should add an appointment successfully", async () => {
