@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Divider, Grid, AppBar, Toolbar, Typography, Box, Container, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
@@ -10,30 +10,33 @@ const PatientProfileStaff = () => {
   const [appointments, setAppointments] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  const fetchPatientData = async () => {
+
+  
+  const fetchPatientData = useCallback(async () => {
     try {
       const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
       console.error("Error fetching patient data:", error);
     }
-  };
+  }, [patientId]);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       const response = await axios.get(`http://localhost:8080/appointments/pId/${patientId}`);
       setAppointments(response.data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
     }
-  };
+  }, [patientId]);
 
   useEffect(() => {
     if (patientId) {
       fetchPatientData();
       fetchAppointments();
     }
-  }, [patientId]);
+  }, [patientId, fetchPatientData, fetchAppointments]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
