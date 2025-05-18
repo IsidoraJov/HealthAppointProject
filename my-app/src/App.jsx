@@ -10,6 +10,7 @@ import StaffDashboard from "./pages/StaffDashboard";
 import StaffProfile from "./pages/StaffProfile";
 import PatientProfileStaff from "./pages/patients/PatientProfileStaff";
 import VerifyAppointment from "./pages/VerifyAppointment";
+import AdminCreateUser from "./pages/AdminCreateUser";
 
 const ProtectedRoute = ({ children, allowedUserIds }) => {
   const userId = localStorage.getItem("role_id");
@@ -34,7 +35,12 @@ const App = () => (
           <Login />
         }
       />
-
+      <Route
+        path="/admin"
+        element={
+          <AdminCreateUser />
+        }
+      />
       <Route
         path="/verify"
         element={

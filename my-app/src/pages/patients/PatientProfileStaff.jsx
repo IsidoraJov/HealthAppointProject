@@ -53,6 +53,20 @@ const PatientProfileStaff = () => {
     }
   };
 
+
+  const handleCancelAppointment = async (appointmentId) => {
+    if (window.confirm("Are you sure you want to cancel this appointment?")) {
+      try {
+        await axios.post(`http://localhost:8080/appointments/cancel/${appointmentId}`);
+        alert("Appointment canceled successfully!");
+        window.location.reload(); 
+      } catch (error) {
+        console.error("Error canceling appointment:", error);
+        alert("Failed to cancel the appointment.");
+      }
+    }
+  };
+  
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#006A6A" }}>
       <AppBar position="static" sx={{ backgroundColor: "#006A6A" }}>
@@ -63,15 +77,15 @@ const PatientProfileStaff = () => {
         </Toolbar>
       </AppBar>
 
-      <Container sx={{ flexGrow: 1, marginY: 2 }}>
+      <Container sx={{ flexGrow: 2, marginY: 0.5 }}>
         <Box sx={{ display: "flex", gap: 4 }}>
           {/* Levo: Osnovni podaci */}
-          <Box sx={{ flex: 1, backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
+          <Box sx={{ flex: 1.2, backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
             <Typography variant="h5" gutterBottom>
               Patient Information
             </Typography>
 
-            <Grid container spacing={2}>
+            <Grid container spacing={4}>
               {[
                 "firstName",
                 "lastName",
@@ -117,36 +131,64 @@ const PatientProfileStaff = () => {
             </Box>
           </Box>
 
-          {/* Desno: Lista termina */}
-          <Box sx={{ flex: 2, backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
-            <Typography variant="h5" gutterBottom>
-              Appointments
-            </Typography>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }} >Appoinment type</TableCell>
-                    <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }}  >Date</TableCell>
-                    <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }}  >Doctor</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {appointments.map((appointment) => (
-                    <TableRow key={appointment.appointmentId}>
-                      <TableCell>{appointment.type}</TableCell>
-                      <TableCell>{new Date(appointment.date).toLocaleString()}</TableCell>
-                      <TableCell>{`Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}`}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
+ 
+{/* Desno: Lista termina */}
+<Box sx={{ flex: 2, backgroundColor: "white", borderRadius: 2, boxShadow: 3, padding: 2 }}>
+  <Typography variant="h5" gutterBottom>
+    Appointments
+  </Typography>
+  <TableContainer component={Paper}>
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }}>Appointment Type</TableCell>
+          <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }}>Date</TableCell>
+          <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }}>Doctor</TableCell>
+          <TableCell sx={{ backgroundColor: "#006A6A", color: "white", fontWeight: "bold" }}>Actions</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {appointments
+          .slice() 
+          .sort((a, b) => new Date(a.date) - new Date(b.date)) 
+          .sort((a, b) => (new Date(a.date) > new Date() ? -1 : 1))
+          .map((appointment) => {
+            const appointmentDate = new Date(appointment.date);
+            const isFutureAppointment = appointmentDate > new Date();
+
+            return (
+              <TableRow 
+                key={appointment.appointmentId} 
+                sx={{ backgroundColor: isFutureAppointment ? "#E0F7FA" : "inherit" }} 
+              >
+                <TableCell>{appointment.type}</TableCell>
+                <TableCell>{appointmentDate.toLocaleString()}</TableCell>
+                <TableCell>{`Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}`}</TableCell>
+                <TableCell>
+                  {isFutureAppointment && (
+                    <Button 
+                      variant="contained" 
+                      color="error" 
+                      onClick={() => handleCancelAppointment(appointment.appointmentId)}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+      </TableBody>
+    </Table>
+  </TableContainer>
+</Box>
+
+
         </Box>
       </Container>
     </Box>
   );
 };
+
 
 export default PatientProfileStaff;

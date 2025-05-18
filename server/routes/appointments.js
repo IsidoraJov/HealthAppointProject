@@ -58,7 +58,28 @@ function validateInput(req, res, next) {
   next();
 }
 
+router.post("/cancel/:appointmentId", validateInput,  (req, res) => {
+  const { appointmentId } = req.params;
+  
+  if (!appointmentId) {
+      return res.status(400).json({ error: "Missing appointment ID." });
+  }
 
+  const sqlUpdate = "UPDATE appointments SET status = 'cancelled' WHERE id = ?";
+
+  connection.query(sqlUpdate, [appointmentId], (err, result) => {
+      if (err) {
+          console.error("Error cancelling appointment:", err);
+          return res.status(500).json({ error: "Database error." });
+      }
+      
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ error: "Appointment not found." });
+      }
+      
+      res.status(200).json({ message: "Appointment cancelled successfully!" });
+  });
+});
 
 router.post("/add", validateInput, (req, res) => {
  
@@ -215,7 +236,7 @@ router.get('/pId/:id', validateId, function (req, res, next) {
     ON 
       a.doctor_id = d.id
     WHERE 
-      a.patient_id = ?;
+      a.patient_id = ? AND status != 'cancelled';
   `;
 
   connection.query(query, [patientId], (err, results) => {
