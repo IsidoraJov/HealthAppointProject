@@ -95,20 +95,24 @@ const addNewPatient = (firstName, lastName, birthday, jmbg, phone, email, addres
 
   // Validacija pojedinačnih polja
   if (!isValidJMBG(jmbg)) {
+    console.log("jmbg")
     return res.status(400).send("Invalid JMBG. It must contain exactly 13 digits.");
   }
 
   if (!isValidEmail(email)) {
+
     return res.status(400).send("Invalid email address.");
   }
 
   if (!isValidPhone(phone)) {
+
     return res.status(400).send("Invalid phone number. It must contain 9-15 digits and can include '+' or '-'.");
   }
 
   // Validacija datuma rođenja
   const birthdayDate = new Date(birthday);
   if (isNaN(birthdayDate.getTime())) {
+
     return res.status(400).send("Invalid birthday format. Use YYYY-MM-DD.");
   }
 
@@ -143,7 +147,6 @@ router.post('/add', (req, res) => {
   if (!firstName || !lastName || !birthday || !jmbg || !phone || !email || !address || !gender || !maritalStatus || !emergencyContact || !language) {
     return res.status(400).send('All fields are required');
   }
-
   addNewPatient(firstName, lastName, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res);
 });
 
