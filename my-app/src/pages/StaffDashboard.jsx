@@ -259,7 +259,7 @@ const StaffDashboard = () => {
  
   const handleSavePatient = async () => {
     try {
-      const response = await axios.post("http://localhost:8080/patients/add", patientData);
+       await axios.post("http://localhost:8080/patients/add", patientData);
       alert("Patient added successfully!");
       setPatientData({
         firstName: "",

@@ -19,7 +19,7 @@ const PatientProfile = () => {
  // const [isDialogOpen, setIsDialogOpen] = useState(false);
  // const [newReportContent, setNewReportContent] = useState("");
   const [isAppointmentsFetched, setIsAppointmentsFetched] = useState(false); 
-  const [editingReport, setEditingReport] = useState(null);
+ // const [editingReport, setEditingReport] = useState(null);
   //const printableRef = useRef();
   const navigate = useNavigate();
 
@@ -82,9 +82,9 @@ const PatientProfile = () => {
     }
   };*/
 
- const handleEditReport = (report) => {
+ /*const handleEditReport = (report) => {
     setEditingReport(report);
-  };
+  };*/
 
   /*const handleSaveEdit = async () => {
     try {
@@ -206,10 +206,14 @@ const PatientProfile = () => {
                   <Typography>Medical history: {report.medical_history}</Typography>
                   <Typography>Additonal text: {report.additional_text}</Typography>
                   <Box sx={{ display: "flex", gap: 2, marginTop: 2 }}>
-                  <Button variant="contained" color="primary" sx={{ backgroundColor: "#FF7043" }} onClick={() => handleEditReport(report)}>
+                  <Button variant="contained" color="primary" sx={{ backgroundColor: "#FF7043" }} 
+                  //onClick={() => handleEditReport(report)}
+                  >
                       Edit
                     </Button>
-                    <Button variant="contained" color="primary" sx={{ backgroundColor: "#4CAF50" }} onClick={() => handleEditReport(report)}>
+                    <Button variant="contained" color="primary" sx={{ backgroundColor: "#4CAF50" }} 
+                    //onClick={() => handleEditReport(report)}
+                    >
                       Print
                     </Button>
                   </Box>

@@ -10,7 +10,6 @@ const PatientProfileStaff = () => {
   const [appointments, setAppointments] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
-
   
   const fetchPatientData = useCallback(async () => {
     try {

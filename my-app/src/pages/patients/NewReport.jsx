@@ -51,6 +51,7 @@ const NewReport = () => {
     }
   },[firstName, lastName]);
   
+  
   const fetchDoctorData = useCallback(async () => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {

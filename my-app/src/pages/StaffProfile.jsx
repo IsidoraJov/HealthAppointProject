@@ -22,7 +22,7 @@ const [isEditing, setIsEditing] = useState(false);
           console.error("Error fetching doctor data:", error);
         });
     }
-  }, []);
+  }, [userId]);
 
 
   return (
@@ -83,7 +83,9 @@ const [isEditing, setIsEditing] = useState(false);
             )}
 
             <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
-              <Button variant="contained" color="primary" sx={{ backgroundColor: "#004D4D" }}>
+              <Button variant="contained" color="primary" sx={{ backgroundColor: "#004D4D" }}
+               onClick={() => setIsEditing(!isEditing)}
+              >
                 {isEditing ? "Save" : "Edit"}
               </Button>
             </Box>
