@@ -3,7 +3,7 @@ import axios from "axios";
 import { Box, Button, Card, CardContent, Typography, TextField } from "@mui/material";
 
 const StaffProfile = () => {
-  const [isEditing, setIsEditing] = useState(false);
+const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",

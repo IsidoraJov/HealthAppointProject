@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Tab, Tabs } from "@mui/material";
 import { AccountCircle } from "@mui/icons-material";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid"; 
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
-import listPlugin from "@fullcalendar/list";
 import logo from "../assets/images/logoB.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -25,7 +24,7 @@ const Dashboard = () => {
     firstName: "",
     lastName: "",
   });
-  const doctorId = localStorage.getItem("userId");
+  //const doctorId = localStorage.getItem("userId");
 
   const handleClosePatientForm = () => {
     setIsPatientFormOpen(false); 
@@ -62,39 +61,41 @@ const Dashboard = () => {
  
 
   const [events, setEvents] = useState([]);
-  const fetchAppointments = async () => {
+  
+  const fetchDoctorData = useCallback(async () => {
+    const doctorId = localStorage.getItem("userId");
+    if (doctorId) {
+      try {
+        const response = await axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`);
+        setDoctorData(response.data);
+      } catch (error) {
+        console.error("Error fetching doctor data:", error);
+      }
+    }
+  }, []);
+  
+  const fetchAppointments = useCallback(async () => {
+    const doctorId = localStorage.getItem("userId");
     try {
       const response = await axios.get(`http://localhost:8080/appointments/${doctorId}`);
       const serverData = response.data;
       const formattedEvents = serverData.map((appointment) => ({
-            id: appointment.id, 
-            patientId: appointment.patient_id,
-            title: appointment.title, 
-            start: appointment.start, 
-            end: appointment.end,   
-        }));
-        setEvents(formattedEvents); 
-        } catch (error) {
-        console.error("Error fetching appointments:", error);
-        }
-    };
-
-    const fetchDoctorData = async () => {
-    
-    if (doctorId) {
-      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
-        .then(response => {
-          setDoctorData(response.data);
-        })
-        .catch(error => {
-          console.error("Error fetching doctor data:", error);
-        });
-    }};
-
-    useEffect(() => {
-        fetchAppointments();
-        fetchDoctorData();
-    }, []);
+        id: appointment.id,
+        patientId: appointment.patient_id,
+        title: appointment.title,
+        start: appointment.start,
+        end: appointment.end,
+      }));
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
+  }, []);
+  
+  useEffect(() => {
+    fetchAppointments();
+    fetchDoctorData();
+  }, [fetchAppointments, fetchDoctorData]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#006A6A" }}>

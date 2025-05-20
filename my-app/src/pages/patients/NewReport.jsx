@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -36,7 +36,7 @@ const NewReport = () => {
   });
   const [activeTab, setActiveTab] = useState(0);
 
-  const fetchPatientData = async () => {
+  const fetchPatientData =useCallback( async () => {
     try {
       const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
         params: { firstName, lastName },
@@ -49,9 +49,9 @@ const NewReport = () => {
     } catch (error) {
       console.error("Error fetching patient data:", error);
     }
-  };
+  },[firstName, lastName]);
   
-  const fetchDoctorData = async () => {
+  const fetchDoctorData = useCallback(async () => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {
       axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
@@ -61,7 +61,7 @@ const NewReport = () => {
         .catch(error => {
           console.error("Error fetching doctor data:", error);
         });
-    }};
+    }},[]);
 
   useEffect(() => {
     fetchPatientData();
@@ -77,7 +77,7 @@ const NewReport = () => {
     };
 
     fetchDiagnosis();
-  }, [firstName,lastName]);
+  }, [firstName,lastName,fetchDoctorData,fetchPatientData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
