@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AppBar, Toolbar, Typography, Box, Container, Grid, Button, IconButton, Avatar, Menu, MenuItem, Stack , Tab, Tabs, TextField, Autocomplete, TextareaAutosize, Badge, Popover, List, ListItem, ListItemText,Card, Divider } from "@mui/material";
 import { AccountCircle,Notifications } from "@mui/icons-material";
 import CloseIcon from '@mui/icons-material/Close';
@@ -40,16 +40,16 @@ const StaffDashboard = () => {
   const [additionalText, setAdditionalText] = useState("");
   const [appointmentTypes, setAppointmentTypes] = useState([]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:8080/verify/notVerified");
       setNotifications(response.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-  };
-
-  const fetchAppointments = async (doctorId) => {
+  }, []);
+  
+  const fetchAppointments = useCallback(async (doctorId) => {
     if (!doctorId) return;
     try {
       const response = await axios.get(`http://localhost:8080/appointments/${doctorId}`);
@@ -65,41 +65,42 @@ const StaffDashboard = () => {
     } catch (error) {
       console.error("Error fetching appointments:", error);
     }
-  };
-
-  const fetchDoctors = async () => {
+  }, []);
+  
+  const fetchDoctors = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:8080/doctors");
       setDoctors(response.data);
     } catch (error) {
       console.error("Error fetching doctors:", error);
     }
-  };
-
-  const fetchPatients = async () => {
+  }, []);
+  
+  const fetchPatients = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:8080/patients");
       setPatients(response.data);
     } catch (error) {
       console.error("Error fetching patients:", error);
     }
-  };
-
-  const fetchAppointmentTypes = async () => {
+  }, []);
+  
+  const fetchAppointmentTypes = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:8080/users/t");
       setAppointmentTypes(response.data);
     } catch (error) {
       console.error("Error fetching appointment types:", error);
     }
-  };
-
+  }, []);
+  
   useEffect(() => {
     fetchDoctors();
     fetchPatients();
     fetchAppointmentTypes();
     fetchNotifications();
-  }, []);
+  }, [fetchDoctors, fetchPatients, fetchAppointmentTypes, fetchNotifications]);
+  
 
   const handleNotifOpen = (event) => {
     setNotifAnchor(event.currentTarget);
