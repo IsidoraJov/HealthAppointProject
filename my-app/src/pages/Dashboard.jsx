@@ -5,7 +5,6 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid"; 
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
-import listPlugin from "@fullcalendar/list";
 import logo from "../assets/images/logoB.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -25,7 +24,7 @@ const Dashboard = () => {
     firstName: "",
     lastName: "",
   });
-  const doctorId = localStorage.getItem("userId");
+  //const doctorId = localStorage.getItem("userId");
 
   const handleClosePatientForm = () => {
     setIsPatientFormOpen(false); 
@@ -62,6 +61,7 @@ const Dashboard = () => {
  
 
   const [events, setEvents] = useState([]);
+  
   const fetchDoctorData = useCallback(async () => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {

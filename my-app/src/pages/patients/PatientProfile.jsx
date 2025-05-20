@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import {Divider,Grid, AppBar, Toolbar, Typography, Box, Container, Accordion, AccordionSummary, AccordionDetails, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
+import React, { useState, useEffect, useCallback } from "react";
+import {Divider,Grid, AppBar, Toolbar, Typography, Box, Container, Accordion, AccordionSummary, AccordionDetails, Button } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSearchParams,useNavigate } from "react-router-dom";
 import axios from "axios";
-import { format } from 'date-fns';
-import ReactToPrint from "react-to-print";
+//import { format } from 'date-fns';
+//import ReactToPrint from "react-to-print";
 
 
 const PatientProfile = () => {
@@ -16,15 +16,15 @@ const PatientProfile = () => {
 
   const [patientData, setPatientData] = useState({});
   const [reports, setReports] = useState([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newReportContent, setNewReportContent] = useState("");
+ // const [isDialogOpen, setIsDialogOpen] = useState(false);
+ // const [newReportContent, setNewReportContent] = useState("");
   const [isAppointmentsFetched, setIsAppointmentsFetched] = useState(false); 
   const [editingReport, setEditingReport] = useState(null);
-  const printableRef = useRef();
+  //const printableRef = useRef();
   const navigate = useNavigate();
 
  
-  const fetchPatientData =useCallback( async () => {
+  const fetchPatientData = useCallback( async () => {
     try {
       const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
         params: { firstName, lastName },
@@ -68,7 +68,7 @@ const PatientProfile = () => {
   }, [reports]);
 
   // Kreiranje novog izveštaja
-  const handleCreateReport = async () => {
+  /*const handleCreateReport = async () => {
     try {
       await axios.post("http://localhost:8080/reports", {
         appointmentId,
@@ -80,13 +80,13 @@ const PatientProfile = () => {
     } catch (error) {
       console.error("Error creating report:", error);
     }
-  };
+  };*/
 
-  const handleEditReport = (report) => {
+ const handleEditReport = (report) => {
     setEditingReport(report);
   };
 
-  const handleSaveEdit = async () => {
+  /*const handleSaveEdit = async () => {
     try {
       await axios.put(`http://localhost:8080/reports/${editingReport.id}`, editingReport);
       setEditingReport(null);
@@ -94,12 +94,16 @@ const PatientProfile = () => {
     } catch (error) {
       console.error("Error saving edited report:", error);
     }
-  };
+  };*/
 
   useEffect(() => {
     fetchPatientData();
     fetchReports();
   }, [fetchPatientData, fetchReports]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   useEffect(() => {
     if (reports.length > 0 && !isAppointmentsFetched) {

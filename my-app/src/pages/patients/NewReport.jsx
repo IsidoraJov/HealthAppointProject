@@ -36,37 +36,36 @@ const NewReport = () => {
   });
   const [activeTab, setActiveTab] = useState(0);
 
-  const fetchPatientData = useCallback(async () => {
+  const fetchPatientData =useCallback( async () => {
     try {
       const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
         params: { firstName, lastName },
       });
       const patientId = patientIdResponse.data.patientId;
-  
+      
       const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
-  
+      
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
       console.error("Error fetching patient data:", error);
     }
-  }, [firstName, lastName]); 
+  },[firstName, lastName]);
   
   const fetchDoctorData = useCallback(async () => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {
-      try {
-        const response = await axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`);
-        setDoctorData(response.data);
-      } catch (error) {
-        console.error("Error fetching doctor data:", error);
-      }
-    }
-  }, []); 
+      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
+        .then(response => {
+          setDoctorData(response.data);
+        })
+        .catch(error => {
+          console.error("Error fetching doctor data:", error);
+        });
+    }},[]);
 
   useEffect(() => {
     fetchPatientData();
     fetchDoctorData();
-  
     const fetchDiagnosis = async () => {
       try {
         const response = await axios.get("http://localhost:8080/reports/diagnosis");
@@ -76,11 +75,10 @@ const NewReport = () => {
         console.error("Error fetching diagnosis codes:", error);
       }
     };
-  
-    fetchDiagnosis();
-  }, [fetchPatientData, fetchDoctorData]);
 
-  
+    fetchDiagnosis();
+  }, [firstName,lastName,fetchDoctorData,fetchPatientData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -111,125 +109,119 @@ const NewReport = () => {
 
   const handlePrint = () => {
     const doc = new jsPDF();
-    const pageHeight = doc.internal.pageSize.height;
-    const marginLeft = 12;
-    const textWidth = 180;
-    let y = 20;
-  
-    // Dodavanje logotipa
+    const pageHeight = doc.internal.pageSize.height; // Visina stranice
+    let y = 20; // Početna Y koordinata
+
     const img = new Image();
     img.src = logo;
     doc.addImage(img, "PNG", 10, 10, 40, 20);
-  
-    // Datum i vreme
+
     const now = new Date();
     const dateTime = now.toLocaleString();
     doc.setFontSize(10);
     doc.rect(140, 10, 50, 15);
     doc.text(dateTime, 165, 20, { align: "center" });
-  
-    // Naslov
+
     doc.setFontSize(18);
     doc.setTextColor("#006A6A");
     doc.text("MEDICAL REPORT", 105, 40, { align: "center" });
     y = 50;
-  
-    // Osnovne informacije o pacijentu
+
+    // Osnovne informacije
     doc.setFontSize(12);
+    doc.setDrawColor("#004D4D");
     doc.setFillColor("#E6F2F2");
-    doc.rect(marginLeft - 2, y, textWidth + 4, 20, "F");
+    doc.rect(10, y, 190, 20, "F");
     doc.setTextColor("black");
-    doc.text("Name:", marginLeft, y + 8);
-    doc.text(`${patientData.firstName} ${patientData.lastName || ""}`, marginLeft + 25, y + 8);
-    doc.text("JMBG:", marginLeft, y + 16);
-    doc.text(patientData.jmbg || "", marginLeft + 25, y + 16);
+    doc.text("Name:", 12, y + 8);
+    doc.text(patientData.firstName + " " + patientData.lastName || "", 30, y + 8);
+    doc.text("JMBG:", 12, y + 16);
+    doc.text(patientData.jmbg || "", 30, y + 16);
+
     doc.text("Birth Date:", 110, y + 8);
     doc.text(patientData.dateOfBirth || "", 140, y + 8);
     doc.text("Email/Phone:", 110, y + 16);
     doc.text(patientData.email || "", 140, y + 16);
     y += 30;
-  
-    // Dijagnoze
+
+    // Dinamičko ispisivanje dijagnoza
+    doc.setFontSize(12);
     doc.setTextColor("#006A6A");
-    doc.text("Diagnosis:", marginLeft, y);
-    y += 7;
-  
-    const diagStartY = y;
+    doc.text("Diagnosis:", 12, y);
+    y += 7;//razmak između naslova i teksta za dijagnozu
+
+    const diagnosisHeight = formData.diagnosis_code.reduce((height, diagnosis) => {
+      const diagnosisText = diagnosis.code + " - " + diagnosis.name;
+      const splitDiagnosis = doc.splitTextToSize(diagnosisText, 180);
+      return height + splitDiagnosis.length * 5; // Svaka linija povećava visinu
+    }, 5);
+
+    doc.setDrawColor("#004D4D");
+    doc.rect(10, y - 5, 190, diagnosisHeight); // Crtanje okvira
+
+    doc.setTextColor("black");
     formData.diagnosis_code.forEach((diagnosis) => {
-      const text = `${diagnosis.code} - ${diagnosis.name}`;
-      const lines = doc.splitTextToSize(text, textWidth);
-      lines.forEach(line => {
+      const diagnosisText = diagnosis.code + " - " + diagnosis.name;
+      const splitDiagnosis = doc.splitTextToSize(diagnosisText, 180);
+      splitDiagnosis.forEach((line) => {
         if (y + 10 > pageHeight) {
           doc.addPage();
           y = 10;
         }
-        doc.setTextColor("black");
-        doc.text(line, marginLeft, y);
+        doc.text(line, 12, y);
         y += 5;
       });
     });
-    doc.setDrawColor("#004D4D");
-    doc.rect(marginLeft - 2, diagStartY - 5, textWidth + 4, y - diagStartY + 10);
-    y += 10;
-  
-    // Sekcije: Therapy, Recommendation, Medical History, Report
+    y += 5;
+
     const sections = [
       { title: "Therapy", value: formData.terapija },
       { title: "Recommendation", value: formData.preporuka },
       { title: "Medical History", value: formData.medical_history },
       { title: "Report", value: formData.additional_text },
     ];
-  
+
     sections.forEach((section) => {
-      if (!section.value) return;
-  
-      if (y + 30 > pageHeight) {
-        doc.addPage(); y = 10;
+      if (y + 20 > pageHeight) {
+        doc.addPage();
+        y = 10;
       }
-  
+    
       doc.setFontSize(12);
       doc.setTextColor("#006A6A");
-      doc.setFont("helvetica", "normal");
-doc.setFontSize(12);
-      doc.text(`${section.title}:`, marginLeft, y);
+      doc.text(`${section.title}:`, 12, y);
       y += 7;
-  
-      const safeText = section.value.replace(/(.{100})/g, "$1 ");
-      const lines = doc.splitTextToSize(safeText, textWidth);
-      const sectionHeight = lines.length * 5 + 5;
-  
-      doc.setDrawColor("#004D4D");
-      doc.setFillColor("#F7FAFA");
-      doc.rect(marginLeft - 2, y - 5, textWidth + 4, sectionHeight, "FD");
-  
+    
+      doc.setFontSize(12);
       doc.setTextColor("black");
-      lines.forEach(line => {
+      const splitText = doc.splitTextToSize(section.value || "", 180);
+      const sectionHeight = splitText.length * 5 + 5;
+    
+      doc.setDrawColor("#004D4D");
+      doc.rect(10, y - 5, 190, sectionHeight);
+    
+      splitText.forEach((line) => {
         if (y + 10 > pageHeight) {
-          doc.addPage(); y = 10;
+          doc.addPage();
+          y = 10;
         }
-        doc.setFont("helvetica", "normal");
-doc.setFontSize(12);
-        doc.text(line, marginLeft, y);
+        doc.text(line, 12, y);
         y += 5;
       });
-  
-      y += 10; // razmak između sekcija
+      y += 5;
     });
-  
-    // Potpis lekara
-    if (y + 25 > pageHeight) {
-      doc.addPage(); y = 10;
+
+    if (y + 20 > pageHeight) {
+      doc.addPage();
+      y = 10;
     }
-  
     doc.setDrawColor("#004D4D");
     doc.line(140, y + 10, 190, y + 10);
     doc.text(`Dr. ${doctorData.firstName} ${doctorData.lastName}`, 140, y + 15);
     doc.text(`${doctorData.specialization}`, 140, y + 20);
-  
-    // Otvaranje PDF-a
+
     doc.output("dataurlnewwindow");
   };
-  
 
   return (
     <Container
