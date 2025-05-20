@@ -27,7 +27,7 @@ const DoctorProfile = () => {
 
   const handleEdit = () => {
     if (isEditing) {
-      const doctorId = localStorage.getItem("doctorId");
+      //const doctorId = localStorage.getItem("doctorId");
       axios.post("http://localhost:8080/doctors/update", doctorData)
         .then(response => {
           console.log("Doctor data updated successfully:", response.data);
