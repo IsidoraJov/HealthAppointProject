@@ -28,7 +28,7 @@ const AddAppointmentForm = ({ open, onClose }) => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/doctors");
+        const response = await axios.get("https://healthappoint-backend.onrender.com/doctors");
         setDoctors(response.data);
       } catch (error) {
         console.error("Error fetching doctors:", error);
@@ -37,7 +37,7 @@ const AddAppointmentForm = ({ open, onClose }) => {
 
     const fetchPatients = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/patients");
+        const response = await axios.get("https://healthappoint-backend.onrender.com/patients");
         setPatients(response.data);
       } catch (error) {
         console.error("Error fetching patients:", error);
@@ -46,7 +46,7 @@ const AddAppointmentForm = ({ open, onClose }) => {
 
     const fetchAppointmentTypes = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/users/t");
+        const response = await axios.get("https://healthappoint-backend.onrender.com/users/t");
         setAppointmentTypes(response.data);
       } catch (error) {
         console.error("Error fetching appointment types:", error);
@@ -65,7 +65,7 @@ const AddAppointmentForm = ({ open, onClose }) => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/doctors/check-availability", {
+      const response = await axios.post("https://healthappoint-backend.onrender.com/doctors/check-availability", {
         doctor_id: selectedDoctor.id,
         start_time: startTime,
         end_time: endTime,
@@ -108,7 +108,7 @@ const AddAppointmentForm = ({ open, onClose }) => {
     };
 
     try {
-      const response = await axios.post("http://localhost:8080/appointments/add", appointmentData);
+      const response = await axios.post("https://healthappoint-backend.onrender.com/appointments/add", appointmentData);
       console.log("Appointment saved successfully:", response.data);
       alert("Appointment added successfully!");
       onClose();

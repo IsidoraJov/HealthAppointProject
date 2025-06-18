@@ -10,7 +10,7 @@ const Dashboard = () => {
    
     useEffect(() => {
       axios
-        .get("http://localhost:8080/doctors")  // Putanja do servera
+        .get("https://healthappoint-backend.onrender.com/doctors")  // Putanja do servera
         .then((response) => {
           setDoctors(response.data);  // Postavljanje odgovora u state
           setLoading(false);           // Završava učitavanje

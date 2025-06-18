@@ -12,7 +12,7 @@ const PatientProfileStaff = () => {
 
   const fetchPatientData = useCallback( async () => {
     try {
-      const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
+      const patientDetailsResponse = await axios.get(`https://healthappoint-backend.onrender.com/patients/${patientId}`);
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
       console.error("Error fetching patient data:", error);
@@ -21,7 +21,7 @@ const PatientProfileStaff = () => {
 
   const fetchAppointments = useCallback( async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/appointments/pId/${patientId}`);
+      const response = await axios.get(`https://healthappoint-backend.onrender.com/appointments/pId/${patientId}`);
       setAppointments(response.data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -45,7 +45,7 @@ const PatientProfileStaff = () => {
 
   const handleSave = async () => {
     try {
-      await axios.put(`http://localhost:8080/patients/update/${patientId}`, patientData);
+      await axios.put(`https://healthappoint-backend.onrender.com/patients/update/${patientId}`, patientData);
       setIsEditing(false);
       fetchPatientData();
     } catch (error) {
@@ -57,7 +57,7 @@ const PatientProfileStaff = () => {
   const handleCancelAppointment = async (appointmentId) => {
     if (window.confirm("Are you sure you want to cancel this appointment?")) {
       try {
-        await axios.post(`http://localhost:8080/appointments/cancel/${appointmentId}`);
+        await axios.post(`https://healthappoint-backend.onrender.com/appointments/cancel/${appointmentId}`);
         alert("Appointment canceled successfully!");
         window.location.reload(); 
       } catch (error) {

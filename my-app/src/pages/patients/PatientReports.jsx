@@ -9,7 +9,7 @@ const PatientReports = ({ patientId }) => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/reports`);
+        const response = await axios.get(`https://healthappoint-backend.onrender.com/reports`);
         setReports(response.data);
       } catch (error) {
         console.error("Error fetching reports:", error);

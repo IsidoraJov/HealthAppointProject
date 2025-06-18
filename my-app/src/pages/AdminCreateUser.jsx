@@ -37,7 +37,7 @@ const AdminCreateUser = () => {
   const handleSubmit = async () => {
     try {
         console.log('Sending request to backend...');
-      const response = await fetch(`http://localhost:8080/users/create-user`, {
+      const response = await fetch(`https://healthappoint-backend.onrender.com/users/create-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

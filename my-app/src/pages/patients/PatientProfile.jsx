@@ -26,13 +26,13 @@ const PatientProfile = () => {
  
   const fetchPatientData = useCallback( async () => {
     try {
-      const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
+      const patientIdResponse = await axios.get("https://healthappoint-backend.onrender.com/patients/getPatientId", {
         params: { firstName, lastName },
       });
       const patientId = patientIdResponse.data.patientId;
    
       
-      const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
+      const patientDetailsResponse = await axios.get(`https://healthappoint-backend.onrender.com/patients/${patientId}`);
       
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
@@ -44,7 +44,7 @@ const PatientProfile = () => {
 
   const fetchReports = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:8080/reports/perPatient", {
+      const response = await axios.get("https://healthappoint-backend.onrender.com/reports/perPatient", {
         params: { firstName, lastName },
       });
       setReports(response.data);
@@ -58,7 +58,7 @@ const PatientProfile = () => {
       console.log('fetch appointments')
       const types = {};
       for (const report of reports) {
-        const typeResponse = await axios.get(`http://localhost:8080/appointments/type/${report.appointment_id}`);
+        const typeResponse = await axios.get(`https://healthappoint-backend.onrender.com/appointments/type/${report.appointment_id}`);
         types[report.id] = typeResponse.data.name;
       }
       setAppointmentTypes(types);
@@ -70,7 +70,7 @@ const PatientProfile = () => {
   // Kreiranje novog izveštaja
   /*const handleCreateReport = async () => {
     try {
-      await axios.post("http://localhost:8080/reports", {
+      await axios.post("https://healthappoint-backend.onrender.com/reports", {
         appointmentId,
         content: newReportContent,
       });
@@ -88,7 +88,7 @@ const PatientProfile = () => {
 
   /*const handleSaveEdit = async () => {
     try {
-      await axios.put(`http://localhost:8080/reports/${editingReport.id}`, editingReport);
+      await axios.put(`https://healthappoint-backend.onrender.com/reports/${editingReport.id}`, editingReport);
       setEditingReport(null);
       fetchReports();
     } catch (error) {

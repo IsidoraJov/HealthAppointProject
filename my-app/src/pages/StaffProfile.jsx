@@ -13,7 +13,7 @@ const [isEditing, setIsEditing] = useState(false);
   useEffect(() => {
   
     if (userId) {
-      axios.get(`http://localhost:8080/users/${userId}`)
+      axios.get(`https://healthappoint-backend.onrender.com/users/${userId}`)
         .then(response => {
     
           setUserData(response.data);

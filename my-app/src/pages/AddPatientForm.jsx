@@ -47,7 +47,7 @@ const AddPatientForm = ({ open, onClose }) => {
     }
 
     try {
-      await axios.post("http://localhost:8080/patients/add", formData);
+      await axios.post("https://healthappoint-backend.onrender.com/patients/add", formData);
       setSuccess(true);
       setFormData({
         firstName: "",

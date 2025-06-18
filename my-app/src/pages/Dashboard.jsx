@@ -46,7 +46,7 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       
-      await fetch('http://localhost:8080/logout', {
+      await fetch('https://healthappoint-backend.onrender.com/logout', {
         method: 'POST',
         credentials: 'include', 
       });
@@ -66,7 +66,7 @@ const Dashboard = () => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {
       try {
-        const response = await axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`);
+        const response = await axios.get(`https://healthappoint-backend.onrender.com/doctors/doctor/${doctorId}`);
         setDoctorData(response.data);
       } catch (error) {
         console.error("Error fetching doctor data:", error);
@@ -77,7 +77,7 @@ const Dashboard = () => {
   const fetchAppointments = useCallback(async () => {
     const doctorId = localStorage.getItem("userId");
     try {
-      const response = await axios.get(`http://localhost:8080/appointments/${doctorId}`);
+      const response = await axios.get(`https://healthappoint-backend.onrender.com/appointments/${doctorId}`);
       const serverData = response.data;
       const formattedEvents = serverData.map((appointment) => ({
         id: appointment.id,

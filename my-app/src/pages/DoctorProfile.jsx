@@ -14,7 +14,7 @@ const DoctorProfile = () => {
   useEffect(() => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {
-      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
+      axios.get(`https://healthappoint-backend.onrender.com/doctors/doctor/${doctorId}`)
         .then(response => {
     
           setDoctorData(response.data);
@@ -28,7 +28,7 @@ const DoctorProfile = () => {
   const handleEdit = () => {
     if (isEditing) {
       const doctorId = localStorage.getItem("doctorId");
-      axios.post("http://localhost:8080/doctors/update", doctorData)
+      axios.post("https://healthappoint-backend.onrender.com/doctors/update", doctorData)
         .then(response => {
           console.log("Doctor data updated successfully:", response.data);
           setIsEditing(false);

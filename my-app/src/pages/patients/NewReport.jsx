@@ -38,12 +38,12 @@ const NewReport = () => {
 
   const fetchPatientData =useCallback( async () => {
     try {
-      const patientIdResponse = await axios.get("http://localhost:8080/patients/getPatientId", {
+      const patientIdResponse = await axios.get("https://healthappoint-backend.onrender.com/patients/getPatientId", {
         params: { firstName, lastName },
       });
       const patientId = patientIdResponse.data.patientId;
       
-      const patientDetailsResponse = await axios.get(`http://localhost:8080/patients/${patientId}`);
+      const patientDetailsResponse = await axios.get(`https://healthappoint-backend.onrender.com/patients/${patientId}`);
       
       setPatientData(patientDetailsResponse.data);
     } catch (error) {
@@ -55,7 +55,7 @@ const NewReport = () => {
   const fetchDoctorData = useCallback(async () => {
     const doctorId = localStorage.getItem("userId");
     if (doctorId) {
-      axios.get(`http://localhost:8080/doctors/doctor/${doctorId}`)
+      axios.get(`https://healthappoint-backend.onrender.com/doctors/doctor/${doctorId}`)
         .then(response => {
           setDoctorData(response.data);
         })
@@ -69,7 +69,7 @@ const NewReport = () => {
     fetchDoctorData();
     const fetchDiagnosis = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/reports/diagnosis");
+        const response = await axios.get("https://healthappoint-backend.onrender.com/reports/diagnosis");
         console.log(response.data);
         setDiagnosisList(response.data);
       } catch (error) {
@@ -96,7 +96,7 @@ const NewReport = () => {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:8080/reports", {
+      await axios.post("https://healthappoint-backend.onrender.com/reports", {
         appointmentId,
         ...formData,
       });

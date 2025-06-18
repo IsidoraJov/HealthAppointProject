@@ -12,7 +12,7 @@ const VerifyAppointment = () => {
     const token = searchParams.get('token');
 
     axios
-      .get(`http://localhost:8080/verify/verify?token=${token}`)
+      .get(`https://healthappoint-backend.onrender.com/verify/verify?token=${token}`)
       .then((response) => {
         setMessage(response.data);
         setConfirmed(true);

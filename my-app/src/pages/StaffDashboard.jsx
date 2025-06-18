@@ -42,7 +42,7 @@ const StaffDashboard = () => {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:8080/verify/notVerified");
+      const response = await axios.get("https://healthappoint-backend.onrender.com/verify/notVerified");
       setNotifications(response.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -52,7 +52,7 @@ const StaffDashboard = () => {
   const fetchAppointments = useCallback(async (doctorId) => {
     if (!doctorId) return;
     try {
-      const response = await axios.get(`http://localhost:8080/appointments/${doctorId}`);
+      const response = await axios.get(`https://healthappoint-backend.onrender.com/appointments/${doctorId}`);
       const serverData = response.data;
       const formattedEvents = serverData.map((appointment) => ({
         id: appointment.id, 
@@ -69,7 +69,7 @@ const StaffDashboard = () => {
   
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:8080/doctors");
+      const response = await axios.get("https://healthappoint-backend.onrender.com/doctors");
       setDoctors(response.data);
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -78,7 +78,7 @@ const StaffDashboard = () => {
   
   const fetchPatients = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:8080/patients");
+      const response = await axios.get("https://healthappoint-backend.onrender.com/patients");
       setPatients(response.data);
     } catch (error) {
       console.error("Error fetching patients:", error);
@@ -87,7 +87,7 @@ const StaffDashboard = () => {
   
   const fetchAppointmentTypes = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:8080/users/t");
+      const response = await axios.get("https://healthappoint-backend.onrender.com/users/t");
       setAppointmentTypes(response.data);
     } catch (error) {
       console.error("Error fetching appointment types:", error);
@@ -116,7 +116,7 @@ const StaffDashboard = () => {
 
   const handleConfirmNotification = async (id, index) => {
     try {
-      const response = await fetch(`http://localhost:8080/verify/confirm/${id}`, {
+      const response = await fetch(`https://healthappoint-backend.onrender.com/verify/confirm/${id}`, {
         method: "POST",
       });
   
@@ -155,7 +155,7 @@ const StaffDashboard = () => {
     if (doctor) {
       await fetchAppointments(doctor.id);
       try {
-        const response = await axios.get(`http://localhost:8080/doctors/doctor/${doctor.id}`);
+        const response = await axios.get(`https://healthappoint-backend.onrender.com/doctors/doctor/${doctor.id}`);
         const serverData = response.data;
         const busySlots = serverData.map((appointment) => ({
             id: appointment.id, 
@@ -191,7 +191,7 @@ const StaffDashboard = () => {
 
     try {
       console.log("Data sent to server:", appointmentData);
-      await axios.post("http://localhost:8080/appointments/add", appointmentData);
+      await axios.post("https://healthappoint-backend.onrender.com/appointments/add", appointmentData);
       alert(`Appointment successfully scheduled with Dr. ${selectedDoctor.first_name} ${selectedDoctor.last_name} for patient ${selectedPatient.first_name} ${selectedPatient.last_name} at ${startTime.format("HH:mm on DD-MM-YYYY")}.`);
       setSelectedDoctor(null);
       setSelectedPatient(null);
@@ -221,7 +221,7 @@ const StaffDashboard = () => {
     };
 
     try {
-      await axios.post("http://localhost:8080/appointments/add", urgentAppointmentData);
+      await axios.post("https://healthappoint-backend.onrender.com/appointments/add", urgentAppointmentData);
       alert(`Urgent appointment successfully scheduled with Dr. ${selectedDoctor.first_name} ${selectedDoctor.last_name} for patient ${selectedPatient.first_name} ${selectedPatient.last_name}.`);
     } catch (error) {
       console.error("Error saving urgent appointment:", error);
@@ -260,7 +260,7 @@ const StaffDashboard = () => {
  
   const handleSavePatient = async () => {
     try {
-       await axios.post("http://localhost:8080/patients/add", patientData);
+       await axios.post("https://healthappoint-backend.onrender.com/patients/add", patientData);
       alert("Patient added successfully!");
       setPatientData({
         firstName: "",
