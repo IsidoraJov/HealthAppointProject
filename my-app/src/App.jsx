@@ -29,6 +29,7 @@ const ProtectedRoute = ({ children, allowedUserIds }) => {
 const App = () => (
   <Router>
     <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
         path="/login"
         element={
