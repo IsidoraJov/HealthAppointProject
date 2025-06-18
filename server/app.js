@@ -31,7 +31,7 @@ const connection = require('./db');
 //console.log('Hashed password:', hashedPassword);
 
 app.use(cors({
-  origin: 'http://localhost:3000' ,
+  origin: 'https://healthappoint.onrender.com' ,
   credentials: true,  
 }));
 
