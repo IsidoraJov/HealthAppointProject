@@ -133,6 +133,7 @@ const StaffDashboard = () => {
   const handleSearch = () => {
     const filtered = patients.filter((patient) => {
       const fullName = `${patient.first_name} ${patient.last_name}`.toLowerCase();
+     
       return (
         patient.jmbg.includes(searchTerm) ||
         fullName.includes(searchTerm.toLowerCase())

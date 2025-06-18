@@ -89,7 +89,7 @@ router.post("/add", validateInput, (req, res) => {
       return res.status(400).json({ error: "Missing required fields." });
   }
   
-  console.log(req);
+ 
       const sqlInsert = `
           INSERT INTO appointments 
           (patient_id, doctor_id, type_id, start_time, end_time, status, reminder_sent, confirmation_sent, additional_text)

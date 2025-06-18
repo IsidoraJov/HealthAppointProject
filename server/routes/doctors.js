@@ -86,9 +86,7 @@ router.get('/getDoctorId', (req, res) => {
     });
   });
  
-  router.get("/oo", (req, res) => {
-    res.send("Backend radi!");
-  });
+  
 
   router.get("/available-slots", async (req, res) => {
     const { doctorId, date } = req.query;

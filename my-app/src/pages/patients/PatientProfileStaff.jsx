@@ -19,7 +19,7 @@ const PatientProfileStaff = () => {
     }
   },[patientId]);
 
-  const fetchAppointments = useCallback=( async () => {
+  const fetchAppointments = useCallback( async () => {
     try {
       const response = await axios.get(`http://localhost:8080/appointments/pId/${patientId}`);
       setAppointments(response.data);

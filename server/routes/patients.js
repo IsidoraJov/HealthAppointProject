@@ -100,30 +100,32 @@ const addNewPatient = (firstName, lastName, birthday, jmbg, phone, email, addres
   }
 
   if (!isValidEmail(email)) {
-
+    console.log("email")
     return res.status(400).send("Invalid email address.");
   }
 
   if (!isValidPhone(phone)) {
-
+    console.log("phone")
     return res.status(400).send("Invalid phone number. It must contain 9-15 digits and can include '+' or '-'.");
   }
 
   // Validacija datuma rođenja
   const birthdayDate = new Date(birthday);
   if (isNaN(birthdayDate.getTime())) {
-
+    console.log("rodj")
     return res.status(400).send("Invalid birthday format. Use YYYY-MM-DD.");
   }
 
   const username = generateUsername(firstName, lastName);
-
+ 
   const query = `
     INSERT INTO patients (first_name, last_name, username, birthday, jmbg, phone, email, address, gender, marital_status, emergency_contact, language)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
+  
+  const formattedBirthday = birthdayDate.toISOString().split('T')[0]; 
 
-  connection.execute(query, [firstName, lastName, username, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language], (err, results) => {
+  connection.execute(query, [firstName, lastName, username, formattedBirthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language], (err, results) => {
     if (err) {
       console.error("Error while adding user:", err);
       return res.status(500).send("Error adding user");
@@ -145,6 +147,7 @@ router.post('/add', (req, res) => {
   const { firstName, lastName, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language } = req.body;
 
   if (!firstName || !lastName || !birthday || !jmbg || !phone || !email || !address || !gender || !maritalStatus || !emergencyContact || !language) {
+    console.log("puko u add")
     return res.status(400).send('All fields are required');
   }
   addNewPatient(firstName, lastName, birthday, jmbg, phone, email, address, gender, maritalStatus, emergencyContact, language, res);

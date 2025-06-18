@@ -52,6 +52,7 @@ router.post('/create-user', async (req, res) => {
         'staff',
         working_hours,
       ]);
+      
     } else {
       return res.status(400).json({ message: 'Invalid role' });
     }

@@ -39,6 +39,7 @@ const loginLimiter = rateLimit({
 // Ruta za logovanje sa rate limiterom
 router.post("/login",loginLimiter, (req, res) => {
 
+
   console.log("Login route hit");
   console.log("Request body:", req.body); 
   const { username, password } = req.body;
@@ -48,7 +49,7 @@ router.post("/login",loginLimiter, (req, res) => {
     const decryptedUsername = CryptoJS.AES.decrypt(username, "tajni_kljuc").toString(CryptoJS.enc.Utf8);
     const decryptedPassword = CryptoJS.AES.decrypt(password, "tajni_kljuc").toString(CryptoJS.enc.Utf8);
    
-
+   console.log(decryptedPassword, decryptedPassword)
     connection.query(
       "SELECT id, password, '2' as role_id FROM user WHERE username = ? UNION SELECT id, password, '1' as role_id FROM doctor WHERE username = ?",
       [decryptedUsername, decryptedUsername],
