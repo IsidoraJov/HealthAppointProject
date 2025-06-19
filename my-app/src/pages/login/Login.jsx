@@ -140,7 +140,7 @@ const Login = () => {
               </Grid>
               <Grid item>
                 <Link href="#" variant="body2">
-                  {"Nemate nalog? Registrujte se"}
+                  {"Nemuuuuate nalog? Registrujte se"}
                 </Link>
               </Grid>
             </Grid>
